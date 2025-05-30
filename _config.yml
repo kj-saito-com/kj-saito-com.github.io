@@ -1,1 +1,5 @@
 # Root config (can be empty or shared settings)
+title: Java SQL Spring Curriculum
+description: Java・SQL・Springの学習カリキュラム
+theme: minima
+baseurl: "/java_sql_spring_curriculum"
