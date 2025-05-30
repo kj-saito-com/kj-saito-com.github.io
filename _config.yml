@@ -1,4 +1,4 @@
 title: java_sql_spring_curriculum
 description: Java・SQL・Spring（TERASOLUNA）学習カリキュラム
-theme: null  # 好きなテーマに変更可能（例: cayman, slate, etc.）
+theme: minima  # 好きなテーマに変更可能（例: cayman, slate, etc.）
 baseurl: "/java_sql_spring_curriculum"
