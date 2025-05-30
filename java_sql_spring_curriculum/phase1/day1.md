@@ -25,18 +25,14 @@
 4. 「JRE」の設定で「Use an execution environment JRE:」から「JavaSE-21」を選択します。
 5. 「Finish」をクリックしてプロジェクトを作成します。
 
-![Eclipseプロジェクト作成](https://example.com/eclipse_project_creation.png)
-
 ## 基本概念の解説
 
 ### 1. Javaの入出力ストリーム
 
 Javaの入出力処理は「ストリーム」という概念に基づいています。ストリームとは、データの流れを表す抽象的な概念で、入力ストリーム（InputStream）と出力ストリーム（OutputStream）の2種類があります。
 
-<div class="term-box">
-<strong>用語解説: ストリーム（Stream）</strong><br>
+**用語解説: ストリーム（Stream）**  
 データの連続的な流れを表す抽象概念です。入力ストリームはプログラムにデータを読み込む流れ、出力ストリームはプログラムからデータを書き出す流れを表します。Javaの入出力APIでは、様々な種類のストリームクラスが提供されています。
-</div>
 
 #### 入出力ストリームの種類
 
@@ -49,8 +45,6 @@ Javaの入出力ストリームは大きく分けて以下の4種類がありま
 2. **文字ストリーム**：テキストデータを扱うためのストリーム
    - 入力：`Reader`（抽象クラス）とそのサブクラス
    - 出力：`Writer`（抽象クラス）とそのサブクラス
-
-![Javaストリーム階層](https://example.com/java_stream_hierarchy.png)
 
 ### 2. ファイル入出力の基本
 
@@ -69,10 +63,8 @@ try (BufferedReader reader = new BufferedReader(new FileReader("input.txt"))) {
 }
 ```
 
-<div class="term-box">
-<strong>用語解説: try-with-resources</strong><br>
+**用語解説: try-with-resources**  
 Java 7から導入された構文で、リソース（ここではBufferedReader）を自動的にクローズするための仕組みです。try文の括弧内でリソースを宣言すると、tryブロックの終了時に自動的にclose()メソッドが呼び出されます。
-</div>
 
 #### ファイルへの書き込み（基本）
 
@@ -90,19 +82,15 @@ try (BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"))) {
 
 ### 3. バッファリングの重要性
 
-<div class="term-box">
-<strong>用語解説: バッファリング</strong><br>
+**用語解説: バッファリング**  
 データを一時的に蓄えてから一括して処理する技術です。ディスクやネットワークなどの遅いデバイスへのアクセス回数を減らし、処理効率を向上させます。
-</div>
 
 バッファリングを使用すると、入出力処理の効率が大幅に向上します。例えば、`FileReader`/`FileWriter`だけを使うよりも、`BufferedReader`/`BufferedWriter`を組み合わせて使うほうが効率的です。
 
 #### バッファリングの効果（計算量の観点から）
 
-<div class="term-box">
-<strong>用語解説: オーダー記法（Big O表記）</strong><br>
+**用語解説: オーダー記法（Big O表記）**  
 アルゴリズムの実行時間や必要なスペースが入力サイズによってどのように変化するかを表す記法です。例えば、O(1)は定数時間、O(n)は入力サイズに比例する時間を意味します。
-</div>
 
 バッファなしの場合、1バイトごとにディスクアクセスが発生するため、n文字の処理にO(n)回のディスクアクセスが必要です。一方、バッファありの場合、バッファサイズを b とすると、O(n/b)回のディスクアクセスで済みます。
 
@@ -117,10 +105,8 @@ Java NIO（New I/O）は、Java 1.4から導入された高性能な入出力API
 - チャネルの概念
 - セレクタの概念
 
-<div class="term-box">
-<strong>用語解説: ノンブロッキングI/O</strong><br>
+**用語解説: ノンブロッキングI/O**  
 従来のI/O（ブロッキングI/O）では、読み書きの操作中にスレッドが待機状態になりますが、ノンブロッキングI/Oでは、データの準備ができていなくても処理を続行できます。これにより、1つのスレッドで複数の入出力操作を効率的に処理できます。
-</div>
 
 #### NIOを使用したファイル読み込み
 
@@ -150,10 +136,8 @@ try {
 
 ### 5. 文字エンコーディング
 
-<div class="term-box">
-<strong>用語解説: 文字エンコーディング</strong><br>
+**用語解説: 文字エンコーディング**  
 文字をバイト列に変換する方式です。代表的なものにUTF-8、UTF-16、Shift-JIS、ISO-8859-1などがあります。異なるエンコーディング間で変換を行うと文字化けの原因になります。
-</div>
 
 ファイルの読み書きを行う際は、適切な文字エンコーディングを指定することが重要です。特に日本語を含むファイルを扱う場合は注意が必要です。
 
@@ -181,8 +165,6 @@ try (BufferedWriter writer = new BufferedWriter(
 4. 「public static void main(String[] args)」にチェックを入れます。
 5. 「Finish」をクリックしてクラスを作成します。
 
-![Eclipseクラス作成](https://example.com/eclipse_class_creation.png)
-
 ### ファイルの作成と配置
 
 1. プロジェクト「JavaIO_Day1」を右クリックします。
@@ -204,8 +186,6 @@ try (BufferedWriter writer = new BufferedWriter(
 3. デバッグパースペクティブに切り替わり、ブレークポイントで実行が一時停止します。
 4. 「Step Over」（F6）、「Step Into」（F5）、「Step Return」（F7）などのボタンで実行を制御します。
 5. 変数の値は「Variables」ビューで確認できます。
-
-![Eclipseデバッグ](https://example.com/eclipse_debug.png)
 
 ## コア演習（必須）
 
@@ -612,16 +592,21 @@ public class ConfigManager {
             configManager.setProperty("app.name", "MyApp");
             configManager.setProperty("app.version", "1.0.0");
             configManager.setProperty("app.language", "ja");
-            configManager.setProperty("app.theme", "dark");
+            configManager.setProperty("db.url", "jdbc:mysql://localhost:3306/mydb");
+            configManager.setProperty("db.user", "user");
+            configManager.setProperty("db.password", "password");
             
             // プロパティを保存
-            configManager.save("Application Configuration");
+            configManager.save("アプリケーション設定");
             System.out.println("設定を保存しました。");
             
-            // プロパティを表示
-            System.out.println("\n現在の設定:");
+            // すべてのプロパティを表示
             configManager.listProperties();
             
+            // 特定のプロパティを取得
+            System.out.println("アプリケーション名: " + configManager.getProperty("app.name"));
+            System.out.println("データベースURL: " + configManager.getProperty("db.url"));
+            System.out.println("存在しないプロパティ: " + configManager.getProperty("nonexistent", "デフォルト値"));
         } catch (IOException e) {
             System.err.println("エラーが発生しました: " + e.getMessage());
             e.printStackTrace();
@@ -631,372 +616,256 @@ public class ConfigManager {
 ```
 
 #### 実装ヒント
-1. `Properties`クラスを使用して、キーと値のペアを管理します。
+1. `Properties`クラスを使用してプロパティを管理します。
 2. `load()`メソッドでは、`FileInputStream`と`Properties.load()`メソッドを使用してプロパティファイルを読み込みます。
 3. `getProperty()`メソッドでは、`Properties.getProperty()`メソッドを使用してプロパティ値を取得します。
 4. `setProperty()`メソッドでは、`Properties.setProperty()`メソッドを使用してプロパティ値を設定します。
 5. `save()`メソッドでは、`FileOutputStream`と`Properties.store()`メソッドを使用してプロパティファイルに保存します。
 6. `listProperties()`メソッドでは、`Properties.stringPropertyNames()`メソッドを使用してキーの一覧を取得し、各キーに対応する値を表示します。
 
-## 解答例
-
-### 演習1: 基本的なファイル入出力の解答例
-
-```java
-package io.basic;
-
-import java.io.*;
-
-/**
- * 基本的なファイル入出力を行うクラス
- */
-public class FileNumbering {
-    
-    /**
-     * 入力ファイルを読み込み、各行の先頭に行番号を付けて出力ファイルに書き出します。
-     * 
-     * @param inputFile 入力ファイルのパス
-     * @param outputFile 出力ファイルのパス
-     * @throws IOException 入出力エラーが発生した場合
-     */
-    public void numberLines(String inputFile, String outputFile) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-            
-            String line;
-            int lineNumber = 1;
-            
-            while ((line = reader.readLine()) != null) {
-                writer.write(lineNumber + ": " + line);
-                writer.newLine();
-                lineNumber++;
-            }
-        }
-    }
-    
-    public static void main(String[] args) {
-        FileNumbering app = new FileNumbering();
-        try {
-            app.numberLines("input.txt", "output.txt");
-            System.out.println("処理が完了しました。");
-        } catch (IOException e) {
-            System.err.println("エラーが発生しました: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### 演習2: ログファイル解析の解答例
-
-```java
-package io.log;
-
-import java.io.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-/**
- * ログファイル解析を行うクラス
- */
-public class LogAnalyzer {
-    
-    // ログの形式: IPアドレス - - [日時] "リクエスト" ステータスコード サイズ
-    private static final Pattern LOG_PATTERN = 
-            Pattern.compile("(\\S+) - - \\[(.+?)\\] \"(.+?)\" (\\d+) (\\d+|-)");
-    
-    /**
-     * ログファイルを解析し、結果を表示します。
-     * 
-     * @param logFile ログファイルのパス
-     * @throws IOException 入出力エラーが発生した場合
-     */
-    public void analyzeLog(String logFile) throws IOException {
-        Map<String, Integer> statusCounts = new HashMap<>();
-        Map<String, Integer> ipCounts = new HashMap<>();
-        int totalAccess = 0;
-        
-        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
-            String line;
-            
-            while ((line = reader.readLine()) != null) {
-                Matcher matcher = LOG_PATTERN.matcher(line);
-                
-                if (matcher.find()) {
-                    String ip = matcher.group(1);
-                    String statusCode = matcher.group(4);
-                    
-                    // 合計アクセス数をカウント
-                    totalAccess++;
-                    
-                    // ステータスコード別のカウント
-                    statusCounts.put(statusCode, statusCounts.getOrDefault(statusCode, 0) + 1);
-                    
-                    // IPアドレス別のカウント
-                    ipCounts.put(ip, ipCounts.getOrDefault(ip, 0) + 1);
-                }
-            }
-        }
-        
-        displayResults(totalAccess, statusCounts, ipCounts);
-    }
-    
-    /**
-     * 解析結果を表示します。
-     * 
-     * @param totalAccess 合計アクセス数
-     * @param statusCounts ステータスコード別のアクセス数
-     * @param ipCounts IPアドレス別のアクセス数
-     */
-    private void displayResults(int totalAccess, Map<String, Integer> statusCounts, Map<String, Integer> ipCounts) {
-        System.out.println("===== ログ解析結果 =====");
-        System.out.println("合計アクセス数: " + totalAccess);
-        
-        System.out.println("\n--- ステータスコード別アクセス数 ---");
-        for (Map.Entry<String, Integer> entry : statusCounts.entrySet()) {
-            System.out.printf("ステータスコード %s: %d回 (%.1f%%)\n", 
-                    entry.getKey(), entry.getValue(), 
-                    (double) entry.getValue() / totalAccess * 100);
-        }
-        
-        System.out.println("\n--- IPアドレス別アクセス数 ---");
-        for (Map.Entry<String, Integer> entry : ipCounts.entrySet()) {
-            System.out.printf("IP %s: %d回 (%.1f%%)\n", 
-                    entry.getKey(), entry.getValue(), 
-                    (double) entry.getValue() / totalAccess * 100);
-        }
-    }
-    
-    public static void main(String[] args) {
-        LogAnalyzer analyzer = new LogAnalyzer();
-        try {
-            analyzer.analyzeLog("access.log");
-        } catch (IOException e) {
-            System.err.println("エラーが発生しました: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### 演習3: CSVファイル処理の解答例
-
-```java
-package io.csv;
-
-import java.io.*;
-import java.util.*;
-
-/**
- * CSVファイル処理を行うクラス
- */
-public class CsvProcessor {
-    
-    /**
-     * CSVファイルを読み込み、条件に合致するレコードを抽出して別のCSVファイルに書き出します。
-     * 条件: 年齢が30歳以上のレコード
-     * 
-     * @param inputCsv 入力CSVファイルのパス
-     * @param outputCsv 出力CSVファイルのパス
-     * @throws IOException 入出力エラーが発生した場合
-     */
-    public void processCSV(String inputCsv, String outputCsv) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputCsv));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(outputCsv))) {
-            
-            String line;
-            boolean isFirstLine = true;
-            
-            while ((line = reader.readLine()) != null) {
-                if (isFirstLine) {
-                    // ヘッダー行はそのまま出力
-                    writer.write(line);
-                    writer.newLine();
-                    isFirstLine = false;
-                } else {
-                    // データ行は条件に合致するもののみ出力
-                    String[] fields = line.split(",");
-                    if (fields.length >= 3) {
-                        try {
-                            int age = Integer.parseInt(fields[2]);
-                            if (age >= 30) {
-                                writer.write(line);
-                                writer.newLine();
-                            }
-                        } catch (NumberFormatException e) {
-                            System.err.println("年齢の解析に失敗しました: " + fields[2]);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    public static void main(String[] args) {
-        CsvProcessor processor = new CsvProcessor();
-        try {
-            processor.processCSV("users.csv", "filtered_users.csv");
-            System.out.println("処理が完了しました。");
-        } catch (IOException e) {
-            System.err.println("エラーが発生しました: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
 ## 解説と補足
 
 ### 入出力処理の効率化
 
-入出力処理は、プログラムの実行速度に大きな影響を与える要素の一つです。特にディスクI/Oは、メモリアクセスと比較して非常に遅いため、効率的な入出力処理を実装することが重要です。
+ファイル入出力処理を効率化するためには、以下の点に注意することが重要です：
 
-#### バッファリングの重要性
+1. **適切なバッファサイズの選択**：
+   - 小さすぎるバッファサイズはディスクアクセスの回数が増えて非効率
+   - 大きすぎるバッファサイズはメモリ消費が増大
+   - 一般的には8KB〜64KBが適切とされる
 
-バッファリングを使用することで、ディスクアクセスの回数を減らし、入出力処理の効率を大幅に向上させることができます。例えば、1MBのファイルを1バイトずつ読み書きする場合：
+2. **リソースの適切な解放**：
+   - try-with-resourcesを使用して確実にクローズする
+   - 明示的にクローズしない場合、ファイルハンドルのリークが発生する可能性がある
 
-- バッファなし: 1,048,576回のディスクアクセス
-- 8KBバッファ: 約128回のディスクアクセス
+3. **適切なストリームの選択**：
+   - テキストデータには文字ストリーム（Reader/Writer）
+   - バイナリデータにはバイトストリーム（InputStream/OutputStream）
+   - 大量のデータを一度に処理する場合はNIOの`Files`クラスのメソッド
 
-この差は、ファイルサイズが大きくなるほど顕著になります。
+4. **文字エンコーディングの明示的な指定**：
+   - プラットフォームのデフォルトエンコーディングに依存しない
+   - 国際化対応のためにUTF-8を使用することが推奨される
 
-#### 適切なバッファサイズの選択
+### 実務での入出力処理の例
 
-バッファサイズは大きければ良いというわけではありません。適切なバッファサイズは、以下の要素によって異なります：
+実務では、以下のような入出力処理がよく使われます：
 
-- メモリ使用量の制約
-- ファイルサイズ
-- アクセスパターン（シーケンシャルかランダムか）
-- ハードウェアの特性
+1. **ログファイルの解析**：
+   - アクセスログやエラーログを解析して統計情報を抽出
+   - 特定のパターンに一致するログエントリを検索
 
-一般的には、8KB〜64KBのバッファサイズが多くの場合に適しています。
+2. **データの変換**：
+   - CSVファイルからデータベースへのインポート
+   - データベースからCSVファイルへのエクスポート
+   - あるフォーマットから別のフォーマットへの変換
 
-### 文字エンコーディングの重要性
+3. **設定ファイルの管理**：
+   - アプリケーションの設定をプロパティファイルやXMLファイルで管理
+   - 実行時に設定を読み込み、必要に応じて更新
 
-テキストファイルを扱う際は、適切な文字エンコーディングを指定することが重要です。特に日本語などの非ASCII文字を含むファイルを扱う場合は注意が必要です。
+4. **一時ファイルの作成と管理**：
+   - 処理の中間結果を一時ファイルに保存
+   - 処理完了後に一時ファイルを削除
 
-#### 主な文字エンコーディング
+5. **大容量ファイルの処理**：
+   - 一度にメモリに読み込めない大きなファイルを分割して処理
+   - ストリーム処理によるメモリ効率の向上
 
-- **UTF-8**: 最も広く使われている国際的な文字エンコーディング。1〜4バイトで文字を表現。
-- **UTF-16**: 2〜4バイトで文字を表現。Javaの内部表現はUTF-16。
-- **Shift-JIS**: 日本語Windows環境でよく使われる。
-- **EUC-JP**: UNIXシステムでよく使われる日本語エンコーディング。
-- **ISO-8859-1**: 西ヨーロッパ言語用のエンコーディング。
+### パフォーマンスに関する考察
 
-#### エンコーディング指定の方法
+入出力処理のパフォーマンスは、アプリケーション全体のパフォーマンスに大きな影響を与えます。以下の点に注意することで、パフォーマンスを向上させることができます：
 
-```java
-// 読み込み時にエンコーディングを指定
-BufferedReader reader = new BufferedReader(
-    new InputStreamReader(new FileInputStream("input.txt"), StandardCharsets.UTF_8));
+1. **ディスクアクセスの最小化**：
+   - バッファリングの活用
+   - 必要なデータのみを読み込む（全ファイルを読み込まない）
+   - 書き込みの場合は、小さな書き込みを集約して一度に書き込む
 
-// 書き込み時にエンコーディングを指定
-BufferedWriter writer = new BufferedWriter(
-    new OutputStreamWriter(new FileOutputStream("output.txt"), StandardCharsets.UTF_8));
-```
+2. **適切なデータ構造の選択**：
+   - 大量のデータを処理する場合は、メモリ効率の良いデータ構造を選択
+   - 検索が頻繁に行われる場合は、ハッシュマップなどの効率的な検索が可能なデータ構造を使用
 
-### Java IOとNIOの使い分け
+3. **並列処理の活用**：
+   - 複数のファイルを同時に処理する場合は、並列処理を検討
+   - ただし、同一ファイルへの並列アクセスには注意が必要
 
-Java IOとNIOは、それぞれ異なる特性を持っており、用途に応じて使い分けることが重要です。
-
-#### Java IO（旧API）の特徴
-
-- シンプルで使いやすい
-- ブロッキングI/O
-- ストリーム指向
-- 単一スレッドでの使用に適している
-
-#### Java NIO（新API）の特徴
-
-- より複雑だが柔軟性が高い
-- ノンブロッキングI/Oをサポート
-- バッファとチャネル指向
-- セレクタを使用した多重I/O
-- 高負荷のサーバーアプリケーションに適している
-
-#### 使い分けの指針
-
-- 単純なファイル操作: Java IO
-- 高性能が必要な場合: Java NIO
-- ノンブロッキングI/Oが必要な場合: Java NIO
-- 多数の接続を処理するサーバー: Java NIO
-
-### 正規表現の活用
-
-ログファイルの解析など、テキスト処理では正規表現が非常に役立ちます。Javaでは`java.util.regex`パッケージを使用して正規表現を扱うことができます。
-
-#### 主な正規表現のパターン
-
-- `\d`: 数字1文字
-- `\w`: 英数字またはアンダースコア1文字
-- `\s`: 空白文字1文字
-- `+`: 直前のパターンの1回以上の繰り返し
-- `*`: 直前のパターンの0回以上の繰り返し
-- `?`: 直前のパターンの0回または1回の出現
-- `()`: グループ化
-- `[]`: 文字クラス（いずれか1文字にマッチ）
-- `^`: 行の先頭
-- `$`: 行の末尾
-
-#### 正規表現の使用例
-
-```java
-Pattern pattern = Pattern.compile("(\\d+)-(\\d+)-(\\d+)");
-Matcher matcher = pattern.matcher("2025-05-28");
-if (matcher.matches()) {
-    String year = matcher.group(1);   // "2025"
-    String month = matcher.group(2);  // "05"
-    String day = matcher.group(3);    // "28"
-}
-```
+4. **NIOの活用**：
+   - チャネルとバッファを使用した効率的なI/O
+   - メモリマップドファイルによる大容量ファイルの効率的な処理
 
 ## 実務での活用シーン
 
-### 1. ログファイル解析
+### 1. ログ解析システム
 
-実務では、アプリケーションのログファイルを解析して、エラーの発生状況や性能のボトルネックを特定することがよくあります。例えば：
+Webサーバーやアプリケーションサーバーのログファイルを解析して、アクセス統計やエラー分析を行うシステムを開発する場合、効率的なファイル入出力処理が必要です。
 
-- Webサーバーのアクセスログを解析して、アクセス数やエラー率を集計
-- アプリケーションのエラーログを解析して、頻発するエラーを特定
-- パフォーマンスログを解析して、処理時間の長いリクエストを特定
+```java
+// 日次ログファイルを解析して統計情報を生成
+public void generateDailyStatistics(String logFile, String outputFile) throws IOException {
+    Map<String, Integer> urlCounts = new HashMap<>();
+    Map<String, Integer> errorCounts = new HashMap<>();
+    
+    try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            // ログエントリを解析
+            LogEntry entry = LogParser.parse(line);
+            
+            // URLごとのアクセス数をカウント
+            String url = entry.getUrl();
+            urlCounts.put(url, urlCounts.getOrDefault(url, 0) + 1);
+            
+            // エラーの場合はエラーコードごとにカウント
+            if (entry.getStatusCode() >= 400) {
+                String errorCode = String.valueOf(entry.getStatusCode());
+                errorCounts.put(errorCode, errorCounts.getOrDefault(errorCode, 0) + 1);
+            }
+        }
+    }
+    
+    // 統計情報をファイルに出力
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
+        writer.write("URL別アクセス数:\n");
+        for (Map.Entry<String, Integer> entry : urlCounts.entrySet()) {
+            writer.write(entry.getKey() + ": " + entry.getValue() + "\n");
+        }
+        
+        writer.write("\nエラーコード別件数:\n");
+        for (Map.Entry<String, Integer> entry : errorCounts.entrySet()) {
+            writer.write(entry.getKey() + ": " + entry.getValue() + "\n");
+        }
+    }
+}
+```
 
-### 2. データ変換処理
+### 2. データ変換ツール
 
-異なるシステム間でデータを連携する際に、データ形式の変換処理が必要になることがよくあります。例えば：
+異なるシステム間でデータを連携する際に、あるフォーマットから別のフォーマットにデータを変換するツールを開発する場合、効率的なファイル入出力処理が必要です。
 
-- CSVファイルをXMLやJSONに変換
-- レガシーシステムのデータを新システム用に変換
-- 外部システムからのデータを取り込み、内部形式に変換
+```java
+// CSVファイルをJSONファイルに変換
+public void convertCsvToJson(String csvFile, String jsonFile) throws IOException {
+    List<Map<String, String>> records = new ArrayList<>();
+    
+    try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
+        String line = reader.readLine();
+        if (line == null) {
+            return; // 空のファイル
+        }
+        
+        // ヘッダー行を解析
+        String[] headers = line.split(",");
+        
+        // データ行を解析
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split(",");
+            Map<String, String> record = new HashMap<>();
+            
+            for (int i = 0; i < headers.length && i < values.length; i++) {
+                record.put(headers[i], values[i]);
+            }
+            
+            records.add(record);
+        }
+    }
+    
+    // JSONファイルに出力
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
+        writer.write("[\n");
+        
+        for (int i = 0; i < records.size(); i++) {
+            writer.write("  {\n");
+            
+            Map<String, String> record = records.get(i);
+            int j = 0;
+            for (Map.Entry<String, String> entry : record.entrySet()) {
+                writer.write("    \"" + entry.getKey() + "\": \"" + entry.getValue() + "\"");
+                if (j < record.size() - 1) {
+                    writer.write(",");
+                }
+                writer.write("\n");
+                j++;
+            }
+            
+            writer.write("  }");
+            if (i < records.size() - 1) {
+                writer.write(",");
+            }
+            writer.write("\n");
+        }
+        
+        writer.write("]\n");
+    }
+}
+```
 
-### 3. 設定ファイル管理
+### 3. 設定管理システム
 
-多くのアプリケーションでは、設定情報を外部ファイルに保存し、実行時に読み込む方式が採用されています。例えば：
+アプリケーションの設定を管理するシステムを開発する場合、プロパティファイルやXMLファイルを読み書きする効率的な入出力処理が必要です。
 
-- アプリケーションの動作パラメータを設定ファイルから読み込み
-- 環境ごと（開発、テスト、本番）に異なる設定を管理
-- ユーザー設定を保存・読み込み
+```java
+// 複数環境（開発、テスト、本番）の設定を管理
+public class EnvironmentConfigManager {
+    private Map<String, Properties> envConfigs = new HashMap<>();
+    private String configDir;
+    
+    public EnvironmentConfigManager(String configDir) {
+        this.configDir = configDir;
+    }
+    
+    // 全環境の設定を読み込む
+    public void loadAllEnvironments() throws IOException {
+        String[] environments = {"dev", "test", "prod"};
+        
+        for (String env : environments) {
+            Properties props = new Properties();
+            String configFile = configDir + "/" + env + ".properties";
+            
+            try (FileInputStream fis = new FileInputStream(configFile)) {
+                props.load(fis);
+                envConfigs.put(env, props);
+                System.out.println(env + "環境の設定を読み込みました。");
+            } catch (FileNotFoundException e) {
+                System.out.println(env + "環境の設定ファイルが見つかりません。");
+            }
+        }
+    }
+    
+    // 特定の環境の設定を取得
+    public Properties getEnvironmentConfig(String environment) {
+        return envConfigs.get(environment);
+    }
+    
+    // 全環境の特定の設定値を比較
+    public void comparePropertyAcrossEnvironments(String propertyKey) {
+        System.out.println("プロパティ「" + propertyKey + "」の環境別設定値:");
+        
+        for (Map.Entry<String, Properties> entry : envConfigs.entrySet()) {
+            String env = entry.getKey();
+            Properties props = entry.getValue();
+            String value = props.getProperty(propertyKey, "未設定");
+            
+            System.out.println(env + ": " + value);
+        }
+    }
+    
+    // 特定の環境の設定を更新して保存
+    public void updateAndSaveEnvironmentConfig(String environment, String key, String value) throws IOException {
+        Properties props = envConfigs.get(environment);
+        if (props == null) {
+            System.out.println(environment + "環境の設定が読み込まれていません。");
+            return;
+        }
+        
+        props.setProperty(key, value);
+        
+        String configFile = configDir + "/" + environment + ".properties";
+        try (FileOutputStream fos = new FileOutputStream(configFile)) {
+            props.store(fos, environment + "環境の設定 - 更新日時: " + new Date());
+            System.out.println(environment + "環境の設定を更新しました。");
+        }
+    }
+}
+```
 
-### 4. バッチ処理
-
-定期的に実行されるバッチ処理では、大量のデータを効率的に処理する必要があります。例えば：
-
-- 日次の売上データを集計して報告書を生成
-- 大量のトランザクションデータを処理して請求書を作成
-- システムのバックアップデータを作成
-
-### 5. ファイル転送・同期
-
-システム間でファイルを転送したり、ディレクトリを同期したりする処理も、入出力処理の重要な応用例です。例えば：
-
-- FTPサーバーとのファイル送受信
-- クラウドストレージとのファイル同期
-- バックアップシステムへのデータ転送
-
-## 参考資料
-
-1. Java公式ドキュメント: [Java I/O, NIO, and NIO.2](https://docs.oracle.com/javase/tutorial/essential/io/index.html)
-2. 書籍: 「Effective Java 第3版」（Joshua Bloch著）
-3. 書籍: 「Java Performance: The Definitive Guide」（Scott Oaks著）
-4. Oracle技術記事: [Java I/O Performance](https://www.oracle.com/technical-resources/articles/javase/perftuning.html)
-5. Java正規表現ガイド: [Java Regex Tutorial](https://www.vogella.com/tutorials/JavaRegularExpressions/article.html)
+これらの実務での活用シーンを参考に、入出力処理の重要性と効率的な実装方法を理解してください。

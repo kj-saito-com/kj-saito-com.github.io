@@ -2,16 +2,16 @@
 
 ## 学習の目的と背景
 
-Java 8で導入されたStream APIは、コレクションや配列などのデータ集合に対する操作を、宣言的かつ関数的なスタイルで記述するための強力なツールです。従来のループ処理（for文、拡張for文、while文など）と比較して、コードの可読性や簡潔性を向上させ、並列処理を容易にするなどの利点があります。
+Stream APIはJava 8で導入された機能で、コレクションの要素を宣言的に処理するための強力な手段を提供します。従来のループ処理と比較して、コードの可読性向上や並列処理の容易さなどの利点がありますが、適切な使用場面を理解することが重要です。
 
-しかし、Stream APIが常にループ処理よりも優れているわけではありません。処理の内容やデータの特性、パフォーマンス要件によっては、従来のループ処理の方が適切な場合もあります。本日の学習では、Stream APIの基本的な使い方を理解し、ループ処理との違いを明確にした上で、それぞれのメリット・デメリットを比較検討し、状況に応じて適切な処理方法を選択できるようになることを目指します。
+本日の学習では、Stream APIの基本から応用までを体系的に学び、従来のループ処理との比較を通じて、それぞれの長所と短所を理解し、適切な選択ができるようになることを目指します。また、パフォーマンスの観点からも両者を比較し、実務での効果的な活用方法を習得します。
 
 ## 前提知識と準備
 
 ### 必要な前提知識
-- Javaの基本構文（変数、制御構文、クラス、オブジェクト）
-- Day 2で学習したコレクションフレームワーク（List, Set, Map）
-- Day 3で学習したラムダ式と関数型インターフェース
+- Javaの基本構文（変数、制御構文、クラスなど）
+- コレクションフレームワークの基本（List, Set, Mapなど）
+- ラムダ式の基本構文
 
 ### 環境準備
 - Eclipse 2023-12 (4.30.0)
@@ -29,460 +29,1539 @@ Java 8で導入されたStream APIは、コレクションや配列などのデ�
 
 ### 1. Stream APIの概要
 
-Stream APIは、データソース（コレクション、配列など）から取得した要素のシーケンス（Stream）に対して、一連の操作（中間操作、終端操作）をパイプライン形式で適用する仕組みです。
+Stream APIは、コレクションの要素を宣言的に処理するためのAPIです。従来のループ処理と異なり、「何を行うか」を記述し、「どのように行うか」の詳細は抽象化されています。
 
-<div class="term-box">
-<strong>用語解説: Stream</strong><br>
-データソースから取得された要素のシーケンスです。Stream自体はデータを保持せず、データソースへの参照と操作のパイプラインを保持します。一度消費されると再利用できません。
-</div>
+**用語解説: Stream（ストリーム）**  
+要素の連続したシーケンスを表す抽象概念です。コレクションとは異なり、要素を保持するデータ構造ではなく、要素を処理するためのパイプラインを提供します。
 
-<div class="term-box">
-<strong>用語解説: パイプライン（Pipeline）</strong><br>
-Streamに対する一連の操作（中間操作と終端操作）の連鎖です。データソース → 0個以上の中間操作 → 1個の終端操作、という構成になります。
-</div>
+**用語解説: パイプライン**  
+Streamの処理は、パイプラインと呼ばれる一連の操作で構成されます。パイプラインは、ソース（コレクションなど）、中間操作（filter, map, sortなど）、終端操作（collect, forEach, reduceなど）で構成されます。
 
-#### Streamの主な特徴
-- **宣言的な処理**: 何をしたいか（What）を記述し、どのように行うか（How）はライブラリに任せる
-- **遅延評価**: 中間操作は終端操作が実行されるまで実行されない
-- **内部イテレーション**: 要素の反復処理はStream API内部で行われる
-- **並列処理の容易さ**: `parallelStream()`を使うことで、簡単に並列処理に切り替えられる
-- **非破壊的**: 元のデータソースを変更しない
-- **一度きり**: Streamは一度消費されると再利用できない
+### 2. Stream APIの基本構造
 
-#### Streamの生成方法
-- コレクションから: `collection.stream()`, `collection.parallelStream()`
-- 配列から: `Arrays.stream(array)`
-- 特定の値から: `Stream.of(value1, value2, ...)`
-- 数値範囲から: `IntStream.range(start, end)`, `IntStream.rangeClosed(start, end)`
-- ファイルから: `Files.lines(path)`
-- 無限ストリーム: `Stream.iterate()`, `Stream.generate()`
+Stream APIの処理は、以下の3つの部分から構成されます：
 
-### 2. 中間操作（Intermediate Operations）
+1. **ソース（Source）**：
+   - Streamを生成するデータソース
+   - 例：コレクション、配列、I/Oチャネル、ジェネレータ関数
 
-中間操作は、Streamを受け取り、新しいStreamを返す操作です。複数の中間操作を連結できます。
+2. **中間操作（Intermediate Operations）**：
+   - Streamを変換する操作
+   - 遅延評価される（終端操作が呼び出されるまで実行されない）
+   - 例：filter, map, flatMap, distinct, sorted, limit, skip
 
-<div class="term-box">
-<strong>用語解説: 中間操作（Intermediate Operation）</strong><br>
-Streamを受け取り、新しいStreamを返す操作です。遅延評価され、終端操作が実行されるまで実際の処理は行われません。例：`filter`, `map`, `sorted`, `distinct`。
-</div>
+3. **終端操作（Terminal Operations）**：
+   - Streamを消費し、結果を生成する操作
+   - パイプラインの実行をトリガーする
+   - 例：forEach, collect, reduce, count, min, max, anyMatch, allMatch, noneMatch
 
-#### 主な中間操作
-- `filter(Predicate<T> predicate)`: 条件に一致する要素のみを抽出
-- `map(Function<T, R> mapper)`: 各要素を別の値に変換
-- `flatMap(Function<T, Stream<R>> mapper)`: 各要素をStreamに変換し、それらを連結して1つのStreamにする
-- `sorted()`: 要素を自然順序でソート
-- `sorted(Comparator<T> comparator)`: 指定されたComparatorでソート
-- `distinct()`: 重複する要素を削除
-- `limit(long maxSize)`: 指定された数までの要素に制限
-- `skip(long n)`: 先頭から指定された数の要素をスキップ
-- `peek(Consumer<T> action)`: 各要素に対して指定されたアクションを実行（デバッグ用）
+### 3. Stream APIの主要な操作
 
-### 3. 終端操作（Terminal Operations）
+#### 中間操作
 
-終端操作は、Streamを受け取り、結果（非Stream値、コレクション、voidなど）を生成する操作です。終端操作が実行されると、パイプライン全体の処理が開始されます。
+**filter**：条件に一致する要素のみを含む新しいStreamを返します。
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+List<String> filteredNames = names.stream()
+                                 .filter(name -> name.startsWith("A"))
+                                 .collect(Collectors.toList());
+// 結果: [Alice]
+```
 
-<div class="term-box">
-<strong>用語解説: 終端操作（Terminal Operation）</strong><br>
-Streamを受け取り、最終的な結果を生成する操作です。終端操作が実行されると、パイプライン全体の処理が開始され、Streamは消費されます。例：`forEach`, `collect`, `count`, `reduce`。
-</div>
+**map**：各要素に関数を適用し、結果を含む新しいStreamを返します。
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+List<Integer> nameLengths = names.stream()
+                                .map(String::length)
+                                .collect(Collectors.toList());
+// 結果: [5, 3, 7]
+```
 
-#### 主な終端操作
-- `forEach(Consumer<T> action)`: 各要素に対して指定されたアクションを実行
-- `collect(Collector<T, A, R> collector)`: Streamの要素を集約してコレクションや単一の値にする（`Collectors`クラスのメソッドと組み合わせて使用）
-  - `Collectors.toList()`: Listに集約
-  - `Collectors.toSet()`: Setに集約
-  - `Collectors.toMap(keyMapper, valueMapper)`: Mapに集約
-  - `Collectors.joining(delimiter)`: 文字列に連結
-  - `Collectors.groupingBy(classifier)`: グループ化
-  - `Collectors.counting()`: 要素数をカウント
-  - `Collectors.summingInt(mapper)`: 合計値を計算
-  - `Collectors.averagingInt(mapper)`: 平均値を計算
-- `count()`: 要素数をカウント
-- `reduce(BinaryOperator<T> accumulator)`: 要素を結合して単一の結果を生成
-- `reduce(T identity, BinaryOperator<T> accumulator)`: 初期値を持つ`reduce`
-- `min(Comparator<T> comparator)`: 最小要素を取得（`Optional<T>`）
-- `max(Comparator<T> comparator)`: 最大要素を取得（`Optional<T>`）
-- `anyMatch(Predicate<T> predicate)`: いずれかの要素が条件に一致するかどうか
-- `allMatch(Predicate<T> predicate)`: すべての要素が条件に一致するかどうか
-- `noneMatch(Predicate<T> predicate)`: いずれの要素も条件に一致しないかどうか
-- `findFirst()`: 最初の要素を取得（`Optional<T>`）
-- `findAny()`: いずれかの要素を取得（並列処理で効率的）（`Optional<T>`）
+**flatMap**：各要素をStreamに変換し、それらを1つのStreamに連結します。
+```java
+List<List<Integer>> nestedLists = Arrays.asList(
+    Arrays.asList(1, 2, 3),
+    Arrays.asList(4, 5, 6),
+    Arrays.asList(7, 8, 9)
+);
+List<Integer> flattenedList = nestedLists.stream()
+                                        .flatMap(Collection::stream)
+                                        .collect(Collectors.toList());
+// 結果: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
 
-### 4. Stream API vs ループ処理
+**distinct**：重複を除去した新しいStreamを返します。
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 2, 3, 3, 3, 4, 4, 4, 4);
+List<Integer> distinctNumbers = numbers.stream()
+                                      .distinct()
+                                      .collect(Collectors.toList());
+// 結果: [1, 2, 3, 4]
+```
 
-| 特徴             | Stream API                                  | ループ処理 (for, while)                     |
-|------------------|---------------------------------------------|---------------------------------------------|
-| **スタイル**     | 宣言的 (何をしたいか)                       | 命令的 (どのように行うか)                   |
-| **可読性**       | 複雑な処理も比較的簡潔に書ける              | 単純な処理は直感的、複雑になると冗長になりがち |
-| **内部/外部反復**| 内部イテレーション (ライブラリが反復を管理) | 外部イテレーション (開発者が反復を制御)     |
-| **並列処理**     | `parallelStream()`で容易に実現可能          | 手動での実装が必要（複雑）                  |
-| **状態管理**     | ステートレス（副作用を避ける設計）          | 状態変数の管理が必要                        |
-| **遅延評価**     | あり（中間操作）                            | なし（即時実行）                            |
-| **再利用性**     | Streamは一度消費すると再利用不可            | ループ変数は再利用可能                      |
-| **デバッグ**     | `peek`やデバッガの機能が必要                | ステップ実行で比較的容易                    |
-| **パフォーマンス** | 単純な処理ではループより遅い場合がある      | 単純な処理では高速な場合が多い              |
-|                  | 並列処理や複雑な処理では有利な場合がある    | 並列化は手動で行う必要があり、難しい        |
+**sorted**：要素をソートした新しいStreamを返します。
+```java
+List<String> names = Arrays.asList("Charlie", "Alice", "Bob");
+List<String> sortedNames = names.stream()
+                               .sorted()
+                               .collect(Collectors.toList());
+// 結果: [Alice, Bob, Charlie]
+```
 
-### 5. Stream APIを使うべき場合
+**limit**：指定された数の要素に制限した新しいStreamを返します。
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+List<Integer> limitedNumbers = numbers.stream()
+                                     .limit(3)
+                                     .collect(Collectors.toList());
+// 結果: [1, 2, 3]
+```
 
-- **複雑なデータ処理パイプライン**: 複数のフィルタリング、マッピング、集約操作を組み合わせる場合
-- **可読性の向上**: 処理の流れを明確にしたい場合
-- **並列処理**: 大量のデータを並列で処理したい場合（ただし、並列化のオーバーヘッドに注意）
-- **関数型プログラミング**: 関数型スタイルでコードを書きたい場合
-- **コレクション操作**: `filter`, `map`, `reduce`などの一般的なコレクション操作を行う場合
+**skip**：指定された数の要素をスキップした新しいStreamを返します。
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+List<Integer> skippedNumbers = numbers.stream()
+                                     .skip(2)
+                                     .collect(Collectors.toList());
+// 結果: [3, 4, 5]
+```
 
-### 6. ループ処理を使うべき場合
+#### 終端操作
 
-- **単純な反復処理**: 特定の回数だけ処理を繰り返す、単純な要素アクセスなど
-- **パフォーマンス重視**: 処理速度が最優先で、Stream APIのオーバーヘッドが無視できない場合
-- **状態の変更**: ループ内で外部の状態変数を頻繁に変更する必要がある場合（Stream APIでは副作用を避けるべき）
-- **細かい制御**: ループの途中で`break`や`continue`を使いたい場合（Stream APIでは限定的）
-- **インデックスアクセス**: 要素のインデックスが必要な場合（Stream APIでは一手間かかる）
-- **可読性**: チームメンバーがStream APIに慣れていない場合や、ループの方が直感的に理解できる単純な処理の場合
+**forEach**：各要素に対してアクションを実行します。
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+names.stream().forEach(System.out::println);
+// 結果: Alice, Bob, Charlie（各要素が別々の行に出力される）
+```
+
+**collect**：Streamの要素を集約して、コレクションなどの結果を返します。
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+Set<String> nameSet = names.stream()
+                          .collect(Collectors.toSet());
+// 結果: [Alice, Bob, Charlie]（Setとして）
+```
+
+**reduce**：Streamの要素を結合して、単一の結果を返します。
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+int sum = numbers.stream()
+                .reduce(0, Integer::sum);
+// 結果: 15
+```
+
+**count**：Streamの要素数を返します。
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie");
+long count = names.stream().count();
+// 結果: 3
+```
+
+**min/max**：Streamの最小/最大要素を返します。
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+Optional<Integer> min = numbers.stream().min(Integer::compareTo);
+Optional<Integer> max = numbers.stream().max(Integer::compareTo);
+// 結果: min = 1, max = 5
+```
+
+**anyMatch/allMatch/noneMatch**：Streamの要素が条件に一致するかどうかを返します。
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+boolean anyEven = numbers.stream().anyMatch(n -> n % 2 == 0);
+boolean allEven = numbers.stream().allMatch(n -> n % 2 == 0);
+boolean noneEven = numbers.stream().noneMatch(n -> n % 2 == 0);
+// 結果: anyEven = true, allEven = false, noneEven = false
+```
+
+### 4. Stream APIの特徴
+
+#### 遅延評価（Lazy Evaluation）
+
+Stream APIの中間操作は遅延評価されます。つまり、終端操作が呼び出されるまで実行されません。これにより、不要な計算を避け、パフォーマンスを向上させることができます。
+
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+Stream<String> stream = names.stream()
+                           .filter(name -> {
+                               System.out.println("Filtering: " + name);
+                               return name.startsWith("A");
+                           })
+                           .map(name -> {
+                               System.out.println("Mapping: " + name);
+                               return name.toUpperCase();
+                           });
+// この時点では何も出力されない
+
+List<String> result = stream.collect(Collectors.toList());
+// 出力:
+// Filtering: Alice
+// Mapping: Alice
+// Filtering: Bob
+// Filtering: Charlie
+// Filtering: David
+```
+
+#### 短絡評価（Short-Circuit Evaluation）
+
+一部の終端操作（findFirst, findAny, anyMatch, allMatch, noneMatchなど）は短絡評価をサポートしています。つまり、結果が確定した時点で処理を終了します。
+
+```java
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David");
+boolean result = names.stream()
+                     .filter(name -> {
+                         System.out.println("Filtering: " + name);
+                         return name.startsWith("A");
+                     })
+                     .anyMatch(name -> {
+                         System.out.println("Matching: " + name);
+                         return name.length() > 3;
+                     });
+// 出力:
+// Filtering: Alice
+// Matching: Alice
+// （Bobなど他の要素は処理されない）
+```
+
+#### 並列処理（Parallel Processing）
+
+Stream APIは並列処理をサポートしています。`parallelStream()`メソッドを使用するか、`parallel()`メソッドを呼び出すことで、並列Streamを作成できます。
+
+```java
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+int sum = numbers.parallelStream()
+                .filter(n -> n % 2 == 0)
+                .mapToInt(n -> n)
+                .sum();
+// 結果: 30（2 + 4 + 6 + 8 + 10）
+```
+
+### 5. Stream APIとループ処理の比較
+
+#### 可読性と表現力
+
+Stream APIは、宣言的なスタイルでコードを記述できるため、「何を行うか」が明確になり、可読性が向上します。一方、従来のループ処理は、「どのように行うか」の詳細を記述するため、コードが冗長になる場合があります。
+
+**Stream API**：
+```java
+List<String> filteredNames = names.stream()
+                                 .filter(name -> name.startsWith("A"))
+                                 .map(String::toUpperCase)
+                                 .collect(Collectors.toList());
+```
+
+**ループ処理**：
+```java
+List<String> filteredNames = new ArrayList<>();
+for (String name : names) {
+    if (name.startsWith("A")) {
+        filteredNames.add(name.toUpperCase());
+    }
+}
+```
+
+#### パフォーマンス
+
+一般的に、単純な操作では従来のループ処理の方がパフォーマンスが良い場合があります。これは、Stream APIのオーバーヘッド（ラムダ式の生成、Streamの作成など）が原因です。ただし、並列処理が必要な場合や、複雑な操作が必要な場合は、Stream APIの方が効率的な場合があります。
+
+**計算量（オーダー記法）の観点**：
+- 基本的な操作（filter, map, forEachなど）：O(n)
+- sorted：O(n log n)
+- distinct：O(n)（ハッシュベースの場合）
+
+#### 使い分けの指針
+
+以下の場合は、Stream APIの使用を検討してください：
+- 複数の変換操作を連鎖させる場合
+- 並列処理が必要な場合
+- コードの可読性を重視する場合
+- 関数型プログラミングのスタイルを採用する場合
+
+以下の場合は、従来のループ処理の使用を検討してください：
+- 単純な操作の場合
+- パフォーマンスが最も重要な場合
+- 副作用（変数の変更など）が必要な場合
+- デバッグが容易である必要がある場合
 
 ## Eclipse操作ガイド
 
+### クラスの作成
+
+1. プロジェクト「JavaStreams_Day5」を右クリックします。
+2. 「New」→「Class」を選択します。
+3. 「Name」に作成するクラス名（例：`StreamDemo`）を入力します。
+4. 「public static void main(String[] args)」にチェックを入れます。
+5. 「Finish」をクリックしてクラスを作成します。
+
 ### Stream APIのコード補完
 
-EclipseはStream APIのメソッドチェーンに対しても強力なコード補完を提供します。
-
-1. Streamを生成するコード（例：`list.stream()`）を入力します。
-2. `.`を入力すると、利用可能な中間操作や終端操作の候補が表示されます。
-3. ラムダ式を入力する際も、引数の型などが補完されます。
-
-![Eclipse Stream補完](https://example.com/eclipse_stream_completion.png)
+1. Stream APIを使用するコードを記述します。
+2. メソッド名の一部を入力し、「Ctrl + Space」を押して、コード補完のメニューを表示します。
+3. 適切なメソッドを選択します。
 
 ### Stream APIのデバッグ
 
-Streamパイプラインのデバッグは、従来のループ処理よりも難しい場合がありますが、Eclipseの機能や`peek`操作を活用できます。
+1. Stream APIを使用するコードにブレークポイントを設定します（行番号の左側をダブルクリック）。
+2. 右クリックして「Debug As」→「Java Application」を選択します。
+3. デバッグパースペクティブで変数の値を確認します。
+4. 「Step Over」（F6）などのボタンで実行を制御します。
+5. Stream APIの中間操作は遅延評価されるため、終端操作が呼び出されるまでブレークポイントが有効にならない場合があります。
 
-1. **ブレークポイント**: ラムダ式内にブレークポイントを設定できます。デバッグモードで実行すると、各要素がそのラムダ式を通過する際に停止します。
-2. **`peek`操作**: パイプラインの途中で要素の状態を確認したい場合に`peek`を使います。
-   ```java
-   List<String> result = names.stream()
-       .filter(s -> s.startsWith("A"))
-       .peek(s -> System.out.println("Filtered: " + s)) // 途中経過を出力
-       .map(String::toUpperCase)
-       .peek(s -> System.out.println("Mapped: " + s))   // 途中経過を出力
-       .collect(Collectors.toList());
-   ```
-3. **インスペクション**: デバッグ中にStreamオブジェクトやラムダ式内の変数をインスペクション（調査）できます。
+### ループからStreamへのリファクタリング
 
-![Eclipse Streamデバッグ](https://example.com/eclipse_stream_debug.png)
-
-### Stream APIへのリファクタリング
-
-Eclipseには、従来のループ処理をStream APIに変換するリファクタリング機能があります（限定的ですが）。
-
-1. 変換したいループ処理を選択します。
-2. 右クリックして「Refactor」→「Convert Loop to Stream」のようなオプションを探します（利用可能な場合）。
+1. 従来のループ処理を選択します。
+2. 右クリックして「Refactor」→「Convert to Stream」を選択します。
+3. Eclipseが自動的にStream APIを使用したコードに変換します。
 
 ## コア演習（必須）
 
-### 演習1: Stream APIの基本操作（難易度：基本）
+### 演習1: 基本的なStream操作（難易度：基本）
 
 #### 課題
-与えられた文字列リストに対して、Stream APIを使用して以下の処理を行うプログラムを作成してください。
-1. 長さが5文字以上の文字列のみを抽出する
-2. 抽出した文字列をすべて大文字に変換する
-3. 変換後の文字列をアルファベット順にソートする
-4. 結果をリストとして収集する
+以下の操作を行うプログラムを作成してください：
+1. 整数のリストから偶数のみをフィルタリングする
+2. 文字列のリストから特定の条件に一致する要素を抽出する
+3. オブジェクトのリストから特定のフィールドを抽出する
 
 #### 雛形コード
+以下のクラスを作成してください：
+
 ```java
-package stream.basic;
+package streams.basic;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Stream APIの基本操作を練習するクラス
+ * 基本的なStream操作を学ぶためのデモクラス
  */
-public class BasicStreamOperations {
-
+public class BasicStreamDemo {
+    
     /**
-     * 文字列リストに対してStream操作を行います。
+     * 整数のリストから偶数のみをフィルタリングします。
      * 
-     * @param inputList 入力となる文字列リスト
-     * @return 処理後の文字列リスト
+     * @param numbers 整数のリスト
+     * @return 偶数のみを含むリスト
      */
-    public List<String> processStrings(List<String> inputList) {
-        // TODO: Stream APIを使用して以下の処理を実装
-        // 1. 長さが5文字以上の文字列のみを抽出 (filter)
-        // 2. 抽出した文字列をすべて大文字に変換 (map)
-        // 3. 変換後の文字列をアルファベット順にソート (sorted)
-        // 4. 結果をリストとして収集 (collect)
+    public static List<Integer> filterEvenNumbers(List<Integer> numbers) {
+        // TODO: ここにStream APIを使用したコードを実装
+        // ヒント1: streamメソッドを使用してStreamを作成
+        // ヒント2: filterメソッドを使用して偶数のみをフィルタリング
+        // ヒント3: collectメソッドを使用して結果をリストに変換
         
         return null; // 仮の戻り値
     }
-
+    
+    /**
+     * 文字列のリストから、指定された文字で始まり、指定された長さ以上の文字列のみをフィルタリングします。
+     * 
+     * @param strings 文字列のリスト
+     * @param startChar 開始文字
+     * @param minLength 最小の長さ
+     * @return 条件に一致する文字列のみを含むリスト
+     */
+    public static List<String> filterStrings(List<String> strings, char startChar, int minLength) {
+        // TODO: ここにStream APIを使用したコードを実装
+        // ヒント1: streamメソッドを使用してStreamを作成
+        // ヒント2: filterメソッドを使用して条件に一致する文字列のみをフィルタリング
+        // ヒント3: collectメソッドを使用して結果をリストに変換
+        
+        return null; // 仮の戻り値
+    }
+    
+    /**
+     * 人物のリストから、指定された年齢以上の人物の名前のみを抽出します。
+     * 
+     * @param people 人物のリスト
+     * @param minAge 最小の年齢
+     * @return 条件に一致する人物の名前のみを含むリスト
+     */
+    public static List<String> extractNames(List<Person> people, int minAge) {
+        // TODO: ここにStream APIを使用したコードを実装
+        // ヒント1: streamメソッドを使用してStreamを作成
+        // ヒント2: filterメソッドを使用して条件に一致する人物のみをフィルタリング
+        // ヒント3: mapメソッドを使用して人物から名前を抽出
+        // ヒント4: collectメソッドを使用して結果をリストに変換
+        
+        return null; // 仮の戻り値
+    }
+    
     public static void main(String[] args) {
-        BasicStreamOperations demo = new BasicStreamOperations();
+        // 整数のリスト
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        
+        // 文字列のリスト
         List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace");
         
-        System.out.println("元のリスト: " + names);
+        // 人物のリスト
+        List<Person> people = Arrays.asList(
+            new Person("Alice", 25),
+            new Person("Bob", 30),
+            new Person("Charlie", 35),
+            new Person("David", 40),
+            new Person("Eve", 45)
+        );
         
-        List<String> result = demo.processStrings(names);
+        // 偶数のフィルタリング
+        List<Integer> evenNumbers = filterEvenNumbers(numbers);
+        System.out.println("偶数のみ: " + evenNumbers);
         
-        System.out.println("処理後のリスト: " + result);
-        // 期待される出力例: [ALICE, CHARLIE, DAVID, FRANK, GRACE]
+        // 文字列のフィルタリング
+        List<String> filteredNames = filterStrings(names, 'C', 5);
+        System.out.println("'C'で始まり、長さが5以上の名前: " + filteredNames);
+        
+        // 人物の名前の抽出
+        List<String> extractedNames = extractNames(people, 35);
+        System.out.println("35歳以上の人物の名前: " + extractedNames);
+    }
+    
+    /**
+     * 人物を表すクラス
+     */
+    static class Person {
+        private String name;
+        private int age;
+        
+        public Person(String name, int age) {
+            this.name = name;
+            this.age = age;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public int getAge() {
+            return age;
+        }
+        
+        @Override
+        public String toString() {
+            return "Person [name=" + name + ", age=" + age + "]";
+        }
     }
 }
 ```
 
 #### 実装ヒント
-- `inputList.stream()`でStreamを生成します。
-- `filter`メソッドで文字列の長さをチェックします (`s.length() >= 5`)。
-- `map`メソッドで大文字に変換します (`String::toUpperCase`)。
-- `sorted`メソッドでソートします。
-- `collect(Collectors.toList())`で結果をリストに収集します。
+1. `filterEvenNumbers`メソッドでは、`stream()`メソッドを使用してStreamを作成し、`filter(n -> n % 2 == 0)`を使用して偶数のみをフィルタリングします。最後に`collect(Collectors.toList())`を使用して結果をリストに変換します。
+2. `filterStrings`メソッドでは、`stream()`メソッドを使用してStreamを作成し、`filter(s -> s.startsWith(String.valueOf(startChar)) && s.length() >= minLength)`を使用して条件に一致する文字列のみをフィルタリングします。
+3. `extractNames`メソッドでは、`stream()`メソッドを使用してStreamを作成し、`filter(p -> p.getAge() >= minAge)`を使用して条件に一致する人物のみをフィルタリングし、`map(Person::getName)`を使用して人物から名前を抽出します。
 
-### 演習2: Stream API vs ループ処理（パフォーマンス比較）（難易度：応用）
+### 演習2: Stream APIとループ処理のパフォーマンス比較（難易度：応用）
 
 #### 課題
-数値リストに対して、以下の処理をStream APIと従来のループ処理の両方で実装し、それぞれの実行時間を測定・比較してください。
-1. 偶数のみを抽出する
-2. 抽出した数値を2倍にする
-3. 2倍にした数値の合計値を求める
+Stream APIと従来のループ処理のパフォーマンスを比較するプログラムを作成してください。以下の操作について、両者の実行時間を測定し、比較してください：
+1. 大きな整数リストからの偶数のフィルタリングと合計計算
+2. 大きな整数リストのソートと上位N個の要素の抽出
+3. 大きな整数リストの並列処理と逐次処理の比較
 
 #### 雛形コード
+以下のクラスを作成してください：
+
 ```java
-package stream.comparison;
+package streams.performance;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
- * Stream APIとループ処理のパフォーマンスを比較するクラス
+ * Stream APIとループ処理のパフォーマンスを比較するデモクラス
  */
-public class StreamVsLoopPerformance {
-
-    private static final int LIST_SIZE = 1_000_000; // リストのサイズ
-    private static final int MAX_VALUE = 1000;      // 数値の最大値
-
+public class StreamPerformanceDemo {
+    
+    // リストのサイズ
+    private static final int LIST_SIZE = 10_000_000;
+    
+    // 乱数生成器
+    private static final Random RANDOM = new Random();
+    
     /**
-     * Stream APIを使用して処理を行います。
+     * 指定されたサイズのランダムな整数リストを生成します。
      * 
-     * @param numbers 数値リスト
-     * @return 処理結果（合計値）
+     * @param size リストのサイズ
+     * @return ランダムな整数リスト
      */
-    public long processWithStream(List<Integer> numbers) {
-        // TODO: Stream APIを使用して以下の処理を実装
-        // 1. 偶数のみを抽出 (filter)
-        // 2. 抽出した数値を2倍にする (map)
-        // 3. 2倍にした数値の合計値を求める (sum)
-        
-        return 0L; // 仮の戻り値
+    public static List<Integer> generateRandomList(int size) {
+        List<Integer> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(RANDOM.nextInt(1000));
+        }
+        return list;
     }
-
+    
     /**
-     * 従来のループ処理を使用して処理を行います。
+     * Stream APIを使用して、リストから偶数のみをフィルタリングし、合計を計算します。
      * 
-     * @param numbers 数値リスト
-     * @return 処理結果（合計値）
+     * @param numbers 整数のリスト
+     * @return 偶数の合計
      */
-    public long processWithLoop(List<Integer> numbers) {
-        long sum = 0;
-        // TODO: 従来のループ処理（拡張for文など）を使用して以下の処理を実装
-        // 1. 各数値をチェックし、偶数かどうか判定
-        // 2. 偶数であれば2倍にする
-        // 3. 合計値に加算する
+    public static int sumEvenNumbersWithStream(List<Integer> numbers) {
+        // TODO: ここにStream APIを使用したコードを実装
+        // ヒント1: streamメソッドを使用してStreamを作成
+        // ヒント2: filterメソッドを使用して偶数のみをフィルタリング
+        // ヒント3: mapToIntメソッドを使用してIntStreamに変換
+        // ヒント4: sumメソッドを使用して合計を計算
         
-        return sum;
+        return 0; // 仮の戻り値
     }
-
+    
     /**
-     * パフォーマンスを測定します。
+     * ループ処理を使用して、リストから偶数のみをフィルタリングし、合計を計算します。
      * 
-     * @param taskName タスク名
-     * @param task 測定対象のタスク (Runnable)
+     * @param numbers 整数のリスト
+     * @return 偶数の合計
+     */
+    public static int sumEvenNumbersWithLoop(List<Integer> numbers) {
+        // TODO: ここにループ処理を使用したコードを実装
+        // ヒント1: forループを使用してリストを走査
+        // ヒント2: if文を使用して偶数のみをフィルタリング
+        // ヒント3: 合計を計算
+        
+        return 0; // 仮の戻り値
+    }
+    
+    /**
+     * Stream APIを使用して、リストをソートし、上位N個の要素を抽出します。
+     * 
+     * @param numbers 整数のリスト
+     * @param n 抽出する要素の数
+     * @return 上位N個の要素を含むリスト
+     */
+    public static List<Integer> topNWithStream(List<Integer> numbers, int n) {
+        // TODO: ここにStream APIを使用したコードを実装
+        // ヒント1: streamメソッドを使用してStreamを作成
+        // ヒント2: sortedメソッドを使用してソート
+        // ヒント3: limitメソッドを使用して上位N個の要素を抽出
+        // ヒント4: collectメソッドを使用して結果をリストに変換
+        
+        return null; // 仮の戻り値
+    }
+    
+    /**
+     * ループ処理を使用して、リストをソートし、上位N個の要素を抽出します。
+     * 
+     * @param numbers 整数のリスト
+     * @param n 抽出する要素の数
+     * @return 上位N個の要素を含むリスト
+     */
+    public static List<Integer> topNWithLoop(List<Integer> numbers, int n) {
+        // TODO: ここにループ処理を使用したコードを実装
+        // ヒント1: リストのコピーを作成
+        // ヒント2: Collectionsクラスのsortメソッドを使用してソート
+        // ヒント3: サブリストを作成して上位N個の要素を抽出
+        
+        return null; // 仮の戻り値
+    }
+    
+    /**
+     * 並列Stream APIを使用して、リストから偶数のみをフィルタリングし、合計を計算します。
+     * 
+     * @param numbers 整数のリスト
+     * @return 偶数の合計
+     */
+    public static int sumEvenNumbersWithParallelStream(List<Integer> numbers) {
+        // TODO: ここに並列Stream APIを使用したコードを実装
+        // ヒント1: parallelStreamメソッドを使用して並列Streamを作成
+        // ヒント2: filterメソッドを使用して偶数のみをフィルタリング
+        // ヒント3: mapToIntメソッドを使用してIntStreamに変換
+        // ヒント4: sumメソッドを使用して合計を計算
+        
+        return 0; // 仮の戻り値
+    }
+    
+    /**
+     * 処理の実行時間を測定します。
+     * 
+     * @param operation 実行する処理
      * @return 実行時間（ミリ秒）
      */
-    public long measurePerformance(String taskName, Runnable task) {
-        System.out.println("測定開始: " + taskName);
-        long startTime = System.nanoTime();
-        task.run();
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime) / 1_000_000; // ミリ秒に変換
-        System.out.println("測定終了: " + taskName + " - 実行時間: " + duration + "ms");
-        return duration;
+    public static long measureExecutionTime(Runnable operation) {
+        long startTime = System.currentTimeMillis();
+        operation.run();
+        long endTime = System.currentTimeMillis();
+        return endTime - startTime;
     }
-
+    
     public static void main(String[] args) {
-        StreamVsLoopPerformance demo = new StreamVsLoopPerformance();
+        // ランダムな整数リストを生成
+        System.out.println("ランダムな整数リストを生成中...");
+        List<Integer> numbers = generateRandomList(LIST_SIZE);
+        System.out.println("リストサイズ: " + numbers.size());
         
-        // 大量の数値リストを生成
-        List<Integer> numbers = new ArrayList<>(LIST_SIZE);
-        Random random = new Random();
-        for (int i = 0; i < LIST_SIZE; i++) {
-            numbers.add(random.nextInt(MAX_VALUE));
-        }
+        // 偶数の合計計算のパフォーマンス比較
+        System.out.println("\n===== 偶数の合計計算のパフォーマンス比較 =====");
         
-        // Stream APIでの処理時間を測定
-        long streamResult = 0;
-        long streamTime = demo.measurePerformance("Stream API", () -> {
-            // 複数回実行して平均を取る方が望ましいが、ここでは簡略化
-            long result = demo.processWithStream(numbers);
-            // 結果を変数に格納しないと最適化で処理がスキップされる可能性があるため注意
-            // この例ではstreamResultに代入しているが、実際には戻り値を使うなどする
-            // non-local variable streamResult cannot be assigned to from within lambda expression
-            // なので、このままだとコンパイルエラー。実際には戻り値を使うか、AtomicLongなどを使う。
-            // ここでは簡単のため、測定メソッド内で結果を返すように修正する前提とする。
-            // （雛形コードのmeasurePerformanceはRunnableを受け取るため、戻り値がない）
-            // 修正案：measurePerformanceがSupplier<Long>を受け取るようにする
-            // Supplier<Long> task = () -> demo.processWithStream(numbers);
+        // Stream APIを使用した場合
+        long streamTime = measureExecutionTime(() -> {
+            int sum = sumEvenNumbersWithStream(numbers);
+            System.out.println("Stream APIの結果: " + sum);
         });
-        // streamResult = demo.processWithStream(numbers); // 実際の結果取得
+        System.out.println("Stream APIの実行時間: " + streamTime + "ms");
         
-        // ループ処理での処理時間を測定
-        long loopResult = 0;
-        long loopTime = demo.measurePerformance("ループ処理", () -> {
-            // Supplier<Long> task = () -> demo.processWithLoop(numbers);
+        // ループ処理を使用した場合
+        long loopTime = measureExecutionTime(() -> {
+            int sum = sumEvenNumbersWithLoop(numbers);
+            System.out.println("ループ処理の結果: " + sum);
         });
-        // loopResult = demo.processWithLoop(numbers); // 実際の結果取得
+        System.out.println("ループ処理の実行時間: " + loopTime + "ms");
         
-        // 結果の検証（StreamとLoopの結果が一致するか）
-        // System.out.println("Stream APIの結果: " + streamResult);
-        // System.out.println("ループ処理の結果: " + loopResult);
-        // if (streamResult == loopResult) {
-        //     System.out.println("結果は一致しました。");
-        // } else {
-        //     System.err.println("警告: 結果が一致しません！");
-        // }
+        // 比率を計算
+        double ratio1 = (double) streamTime / loopTime;
+        System.out.printf("Stream API / ループ処理の比率: %.2f%n", ratio1);
         
-        System.out.println("\n=== パフォーマンス比較 ===");
-        System.out.println("Stream API: " + streamTime + "ms");
-        System.out.println("ループ処理: " + loopTime + "ms");
-        if (loopTime > 0) {
-            System.out.printf("Stream APIはループ処理の %.2f 倍の速度%n", (double) loopTime / streamTime);
-        }
+        // ソートと上位N個の要素抽出のパフォーマンス比較
+        System.out.println("\n===== ソートと上位N個の要素抽出のパフォーマンス比較 =====");
+        final int n = 10;
+        
+        // Stream APIを使用した場合
+        long streamSortTime = measureExecutionTime(() -> {
+            List<Integer> topN = topNWithStream(numbers, n);
+            System.out.println("Stream APIの結果（先頭3つ）: " + topN.subList(0, Math.min(3, topN.size())));
+        });
+        System.out.println("Stream APIの実行時間: " + streamSortTime + "ms");
+        
+        // ループ処理を使用した場合
+        long loopSortTime = measureExecutionTime(() -> {
+            List<Integer> topN = topNWithLoop(numbers, n);
+            System.out.println("ループ処理の結果（先頭3つ）: " + topN.subList(0, Math.min(3, topN.size())));
+        });
+        System.out.println("ループ処理の実行時間: " + loopSortTime + "ms");
+        
+        // 比率を計算
+        double ratio2 = (double) streamSortTime / loopSortTime;
+        System.out.printf("Stream API / ループ処理の比率: %.2f%n", ratio2);
+        
+        // 並列処理と逐次処理のパフォーマンス比較
+        System.out.println("\n===== 並列処理と逐次処理のパフォーマンス比較 =====");
+        
+        // 逐次Stream APIを使用した場合
+        long sequentialStreamTime = measureExecutionTime(() -> {
+            int sum = sumEvenNumbersWithStream(numbers);
+            System.out.println("逐次Stream APIの結果: " + sum);
+        });
+        System.out.println("逐次Stream APIの実行時間: " + sequentialStreamTime + "ms");
+        
+        // 並列Stream APIを使用した場合
+        long parallelStreamTime = measureExecutionTime(() -> {
+            int sum = sumEvenNumbersWithParallelStream(numbers);
+            System.out.println("並列Stream APIの結果: " + sum);
+        });
+        System.out.println("並列Stream APIの実行時間: " + parallelStreamTime + "ms");
+        
+        // 比率を計算
+        double ratio3 = (double) sequentialStreamTime / parallelStreamTime;
+        System.out.printf("逐次Stream API / 並列Stream APIの比率: %.2f%n", ratio3);
+        
+        // 結果のまとめ
+        System.out.println("\n===== 結果のまとめ =====");
+        System.out.println("1. 偶数の合計計算:");
+        System.out.println("   - Stream API: " + streamTime + "ms");
+        System.out.println("   - ループ処理: " + loopTime + "ms");
+        System.out.printf("   - 比率（Stream API / ループ処理）: %.2f%n", ratio1);
+        
+        System.out.println("2. ソートと上位N個の要素抽出:");
+        System.out.println("   - Stream API: " + streamSortTime + "ms");
+        System.out.println("   - ループ処理: " + loopSortTime + "ms");
+        System.out.printf("   - 比率（Stream API / ループ処理）: %.2f%n", ratio2);
+        
+        System.out.println("3. 並列処理と逐次処理:");
+        System.out.println("   - 逐次Stream API: " + sequentialStreamTime + "ms");
+        System.out.println("   - 並列Stream API: " + parallelStreamTime + "ms");
+        System.out.printf("   - 比率（逐次Stream API / 並列Stream API）: %.2f%n", ratio3);
+        
+        System.out.println("\n===== 考察 =====");
+        // TODO: ここに測定結果の考察を記述
     }
 }
 ```
 
 #### 実装ヒント
-- `processWithStream`メソッド:
-  - `numbers.stream()`でStreamを生成します。
-  - `filter(n -> n % 2 == 0)`で偶数を抽出します。
-  - `mapToLong(n -> (long)n * 2)`で2倍にして`LongStream`に変換します（`sum()`を使うため）。`mapToInt`でも良いですが、合計値が`int`の範囲を超える可能性を考慮して`long`にします。
-  - `sum()`で合計値を求めます。
-- `processWithLoop`メソッド:
-  - 拡張for文 (`for (int number : numbers)`) を使用します。
-  - `if (number % 2 == 0)`で偶数を判定します。
-  - 偶数であれば `sum += (long)number * 2;` のように合計値に加算します。
-- パフォーマンス測定:
-  - `measurePerformance`メソッドは、与えられた`Runnable`を実行し、その時間を計測します。ただし、この雛形では`Runnable`が結果を返せないため、実際には`Supplier<Long>`など結果を返せるインターフェースを使うか、メソッド内で結果を取得・検証するように修正が必要です。
-  - JVMのウォームアップや複数回測定の平均を取ることで、より正確な測定が可能です（この演習では簡略化）。
+1. `sumEvenNumbersWithStream`メソッドでは、`stream()`メソッドを使用してStreamを作成し、`filter(n -> n % 2 == 0)`を使用して偶数のみをフィルタリングし、`mapToInt(n -> n)`を使用してIntStreamに変換し、`sum()`を使用して合計を計算します。
+2. `sumEvenNumbersWithLoop`メソッドでは、forループを使用してリストを走査し、if文を使用して偶数のみをフィルタリングし、合計を計算します。
+3. `topNWithStream`メソッドでは、`stream()`メソッドを使用してStreamを作成し、`sorted()`を使用してソートし、`limit(n)`を使用して上位N個の要素を抽出し、`collect(Collectors.toList())`を使用して結果をリストに変換します。
+4. `topNWithLoop`メソッドでは、リストのコピーを作成し、`Collections.sort()`を使用してソートし、`subList(0, Math.min(n, list.size()))`を使用して上位N個の要素を抽出します。
+5. `sumEvenNumbersWithParallelStream`メソッドでは、`parallelStream()`メソッドを使用して並列Streamを作成し、それ以外は`sumEvenNumbersWithStream`メソッドと同様に実装します。
 
-### 演習3: Stream APIの選択（可読性と保守性）（難易度：応用）
+### 演習3: 可読性と保守性の観点からの選択（難易度：応用）
 
 #### 課題
-ユーザーオブジェクトのリストがあり、以下の条件を満たすユーザーの名前（文字列のリスト）を取得する処理を、Stream APIと従来のループ処理の両方で実装してください。どちらの実装がより可読性が高く、保守しやすいかを考察してください。
-1. アクティブ（`isActive`が`true`）なユーザー
-2. 年齢（`age`）が30歳以上
-3. 居住地（`city`）が"Tokyo"または"Osaka"
-4. 結果はユーザー名（`name`）のリストとし、名前のアルファベット順でソートする
+以下のシナリオに対して、Stream APIとループ処理のどちらが適切かを判断し、その理由を説明してください。また、選択した方法で実装してください：
+1. ユーザーのリストから特定の条件に一致するユーザーを検索し、その情報を表示する
+2. 大量のログファイルから特定のパターンに一致する行を抽出し、集計する
+3. 複数のデータソースから取得したデータを結合し、変換して出力する
 
 #### 雛形コード
+以下のクラスを作成してください：
+
 ```java
-package stream.selection;
+package streams.readability;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Stream APIとループ処理の可読性・保守性を比較するクラス
+ * 可読性と保守性の観点からStream APIとループ処理を比較するデモクラス
  */
-public class StreamVsLoopReadability {
-
+public class ReadabilityDemo {
+    
     /**
-     * ユーザークラス
+     * ユーザーを表すクラス
      */
-    public static class User {
+    static class User {
+        private String id;
         private String name;
         private int age;
-        private String city;
-        private boolean isActive;
-
-        public User(String name, int age, String city, boolean isActive) {
+        private String department;
+        private double salary;
+        
+        public User(String id, String name, int age, String department, double salary) {
+            this.id = id;
             this.name = name;
             this.age = age;
-            this.city = city;
-            this.isActive = isActive;
+            this.department = department;
+            this.salary = salary;
         }
-
+        
+        public String getId() { return id; }
         public String getName() { return name; }
         public int getAge() { return age; }
-        public String getCity() { return city; }
-        public boolean isActive() { return isActive; }
-
+        public String getDepartment() { return department; }
+        public double getSalary() { return salary; }
+        
         @Override
         public String toString() {
-            return "User{" + "name=\'" + name + "\', age=" + age + ", city=\'" + city + "\', isActive=" + isActive + "}";
+            return "User [id=" + id + ", name=" + name + ", age=" + age + ", department=" + department + ", salary=" + salary + "]";
         }
     }
-
+    
     /**
-     * Stream APIを使用して条件に合うユーザー名を取得します。
-     * 
-     * @param users ユーザーリスト
-     * @return 条件に合うユーザー名のリスト（ソート済み）
+     * ログエントリを表すクラス
      */
-    public List<String> getUserNamesWithStream(List<User> users) {
-        // TODO: Stream APIを使用して以下の処理を実装
-        // 1. アクティブなユーザーを抽出 (filter)
-        // 2. 年齢が30歳以上のユーザーを抽出 (filter)
-        // 3. 居住地が"Tokyo"または"Osaka"のユーザーを抽出 (filter)
-        // 4. ユーザー名を抽出 (map)
-        // 5. 名前でソート (sorted)
-        // 6. 結果をリストとして収集 (collect)
+    static class LogEntry {
+        private String timestamp;
+        private String level;
+        private String message;
+        
+        public LogEntry(String timestamp, String level, String message) {
+            this.timestamp = timestamp;
+            this.level = level;
+            this.message = message;
+        }
+        
+        public String getTimestamp() { return timestamp; }
+        public String getLevel() { return level; }
+        public String getMessage() { return message; }
+        
+        @Override
+        public String toString() {
+            return timestamp + " [" + level + "] " + message;
+        }
+    }
+    
+    /**
+     * 製品を表すクラス
+     */
+    static class Product {
+        private String id;
+        private String name;
+        private double price;
+        private String category;
+        
+        public Product(String id, String name, double price, String category) {
+            this.id = id;
+            this.name = name;
+            this.price = price;
+            this.category = category;
+        }
+        
+        public String getId() { return id; }
+        public String getName() { return name; }
+        public double getPrice() { return price; }
+        public String getCategory() { return category; }
+        
+        @Override
+        public String toString() {
+            return "Product [id=" + id + ", name=" + name + ", price=" + price + ", category=" + category + "]";
+        }
+    }
+    
+    /**
+     * 注文を表すクラス
+     */
+    static class Order {
+        private String id;
+        private String userId;
+        private String productId;
+        private int quantity;
+        
+        public Order(String id, String userId, String productId, int quantity) {
+            this.id = id;
+            this.userId = userId;
+            this.productId = productId;
+            this.quantity = quantity;
+        }
+        
+        public String getId() { return id; }
+        public String getUserId() { return userId; }
+        public String getProductId() { return productId; }
+        public int getQuantity() { return quantity; }
+        
+        @Override
+        public String toString() {
+            return "Order [id=" + id + ", userId=" + userId + ", productId=" + productId + ", quantity=" + quantity + "]";
+        }
+    }
+    
+    /**
+     * 注文詳細を表すクラス
+     */
+    static class OrderDetail {
+        private String orderId;
+        private String productName;
+        private String userName;
+        private int quantity;
+        private double totalPrice;
+        
+        public OrderDetail(String orderId, String productName, String userName, int quantity, double totalPrice) {
+            this.orderId = orderId;
+            this.productName = productName;
+            this.userName = userName;
+            this.quantity = quantity;
+            this.totalPrice = totalPrice;
+        }
+        
+        @Override
+        public String toString() {
+            return "OrderDetail [orderId=" + orderId + ", productName=" + productName + ", userName=" + userName + ", quantity=" + quantity + ", totalPrice=" + totalPrice + "]";
+        }
+    }
+    
+    /**
+     * シナリオ1: ユーザーのリストから特定の条件に一致するユーザーを検索し、その情報を表示します。
+     * 条件: 30歳以上で、開発部門に所属し、給与が50万円以上のユーザー
+     * 
+     * @param users ユーザーのリスト
+     * @return 条件に一致するユーザーのリスト
+     */
+    public static List<User> findUsersScenario1(List<User> users) {
+        // TODO: ここにStream APIまたはループ処理を使用したコードを実装
+        // ヒント1: 条件に一致するユーザーをフィルタリング
+        // ヒント2: 可読性と保守性を考慮して実装
         
         return null; // 仮の戻り値
     }
-
+    
     /**
-     * 従来のループ処理を使用して条件に合うユーザー名を取得します。
+     * シナリオ2: 大量のログファイルから特定のパターンに一致する行を抽出し、集計します。
+     * 条件: ERRORレベルのログエントリを抽出し、メッセージごとに出現回数を集計
      * 
-     * @param users ユーザーリスト
-     * @return 条件に合うユーザー名のリスト（ソート済み）
+     * @param logEntries ログエントリのリスト
+     * @return メッセージごとの出現回数を含むマップ
      */
-    public List<String> getUserNamesWithLoop(List<User> users) {
-        List<String> resultNames = new ArrayList<>();
-        // TODO: 従来のループ処理を使用して以下の処理を実装
-        // 1. 各ユーザーをループで処理
-        // 2. 条件（アクティブ、年齢、居住地）をif文でチェック
-        // 3. 条件に合致すればユーザー名をリストに追加
-        // 4. ループ終了後、リストをソート
+    public static Map<String, Long> analyzeLogsScenario2(List<LogEntry> logEntries) {
+        // TODO: ここにStream APIまたはループ処理を使用したコードを実装
+        // ヒント1: ERRORレベルのログエントリをフィルタリング
+        // ヒント2: メッセージごとに出現回数を集計
+        // ヒント3: 可読性と保守性を考慮して実装
         
-        return resultNames;
+        return null; // 仮の戻り値
     }
-
-    public static void main(String[] args) {
-        StreamVsLoopReadability demo = new StreamVsLoopReadability();
-        List<User> users = List.of(
-            new User("Alice", 25, "Tokyo", true),
-            new User("Bob", 35, "Osaka", true),
-            new User("Charlie", 40, "Tokyo", false),
-            new User("David", 32, "Kyoto", true),
-            new User("Eve", 45, "Tokyo", true),
-            new User("Frank", 28, "Osaka", true),
-            new User("Grace", 38, "Osaka", true)
-        );
-
-        System.out.println("=== Stream APIによる実装 ===");
-        List<String> streamResult = demo.getUserNamesWithStream(users);
-        System.out.println(streamResult);
-        // 期待される出力例: [Bob, Eve, Grace]
-
-        System.out.println("\n=== ループ処理による実装 ===");
-        List<String> loopResult = demo.getUserNamesWithLoop(users);
-        System.out.println(loopResult);
-        // 期待される出力例: [Bob, Eve, Grace]
+    
+    /**
+     * シナリオ3: 複数のデータソースから取得したデータを結合し、変換して出力します。
+     * 条件: 注文情報と製品情報とユーザー情報を結合し、注文詳細を作成
+     * 
+     * @param orders 注文のリスト
+     * @param products 製品のリスト
+     * @param users ユーザーのリスト
+     * @return 注文詳細のリスト
+     */
+    public static List<OrderDetail> processOrdersScenario3(List<Order> orders, List<Product> products, List<User> users) {
+        // TODO: ここにStream APIまたはループ処理を使用したコードを実装
+        // ヒント1: 注文情報と製品情報とユーザー情報を結合
+        // ヒント2: 注文詳細を作成
+        // ヒント3: 可読性と保守性を考慮して実装
         
-        System.out.println("\n=== 考察 ===
+        return null; // 仮の戻り値
+    }
+    
+    public static void main(String[] args) {
+        // ユーザーのリスト
+        List<User> users = Arrays.asList(
+            new User("U001", "山田太郎", 35, "開発", 600000),
+            new User("U002", "佐藤花子", 28, "営業", 450000),
+            new User("U003", "鈴木一郎", 42, "開発", 800000),
+            new User("U004", "田中美咲", 31, "人事", 500000),
+            new User("U005", "伊藤健太", 25, "開発", 400000)
+        );
+        
+        // ログエントリのリスト
+        List<LogEntry> logEntries = Arrays.asList(
+            new LogEntry("2023-01-01 10:00:00", "INFO", "アプリケーションが起動しました"),
+            new LogEntry("2023-01-01 10:05:00", "ERROR", "データベース接続エラー"),
+            new LogEntry("2023-01-01 10:10:00", "WARN", "メモリ使用率が高くなっています"),
+            new LogEntry("2023-01-01 10:15:00", "ERROR", "データベース接続エラー"),
+            new LogEntry("2023-01-01 10:20:00", "INFO", "バックアップが完了しました"),
+            new LogEntry("2023-01-01 10:25:00", "ERROR", "ファイルが見つかりません"),
+            new LogEntry("2023-01-01 10:30:00", "ERROR", "データベース接続エラー")
+        );
+        
+        // 製品のリスト
+        List<Product> products = Arrays.asList(
+            new Product("P001", "ノートパソコン", 150000, "電子機器"),
+            new Product("P002", "スマートフォン", 100000, "電子機器"),
+            new Product("P003", "デスクトップPC", 200000, "電子機器"),
+            new Product("P004", "プリンター", 50000, "電子機器"),
+            new Product("P005", "オフィスチェア", 30000, "家具")
+        );
+        
+        // 注文のリスト
+        List<Order> orders = Arrays.asList(
+            new Order("O001", "U001", "P001", 1),
+            new Order("O002", "U002", "P002", 2),
+            new Order("O003", "U003", "P003", 1),
+            new Order("O004", "U001", "P004", 3),
+            new Order("O005", "U004", "P005", 2)
+        );
+        
+        // シナリオ1: ユーザーのリストから特定の条件に一致するユーザーを検索し、その情報を表示する
+        System.out.println("===== シナリオ1: ユーザー検索 =====");
+        List<User> filteredUsers = findUsersScenario1(users);
+        System.out.println("条件に一致するユーザー:");
+        for (User user : filteredUsers) {
+            System.out.println(user);
+        }
+        
+        // シナリオ2: 大量のログファイルから特定のパターンに一致する行を抽出し、集計する
+        System.out.println("\n===== シナリオ2: ログ分析 =====");
+        Map<String, Long> logStats = analyzeLogsScenario2(logEntries);
+        System.out.println("ERRORレベルのログメッセージの出現回数:");
+        for (Map.Entry<String, Long> entry : logStats.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue() + "回");
+        }
+        
+        // シナリオ3: 複数のデータソースから取得したデータを結合し、変換して出力する
+        System.out.println("\n===== シナリオ3: データ結合と変換 =====");
+        List<OrderDetail> orderDetails = processOrdersScenario3(orders, products, users);
+        System.out.println("注文詳細:");
+        for (OrderDetail detail : orderDetails) {
+            System.out.println(detail);
+        }
+        
+        // 選択理由の説明
+        System.out.println("\n===== 選択理由の説明 =====");
+        System.out.println("シナリオ1（ユーザー検索）:");
+        // TODO: ここにシナリオ1の選択理由を記述
+        
+        System.out.println("\nシナリオ2（ログ分析）:");
+        // TODO: ここにシナリオ2の選択理由を記述
+        
+        System.out.println("\nシナリオ3（データ結合と変換）:");
+        // TODO: ここにシナリオ3の選択理由を記述
+    }
+}
+```
+
+#### 実装ヒント
+1. `findUsersScenario1`メソッドでは、Stream APIを使用して、`filter(u -> u.getAge() >= 30 && u.getDepartment().equals("開発") && u.getSalary() >= 500000)`のように条件に一致するユーザーをフィルタリングします。
+2. `analyzeLogsScenario2`メソッドでは、Stream APIを使用して、`filter(log -> log.getLevel().equals("ERROR"))`でERRORレベルのログエントリをフィルタリングし、`collect(Collectors.groupingBy(LogEntry::getMessage, Collectors.counting()))`でメッセージごとに出現回数を集計します。
+3. `processOrdersScenario3`メソッドでは、ループ処理を使用して、注文情報と製品情報とユーザー情報を結合し、注文詳細を作成します。この場合、複数のデータソースを結合する処理は、ループ処理の方が理解しやすい場合があります。
+
+## 発展演習（オプション）
+
+### 発展演習1: 並列Streamの活用と注意点（難易度：発展）
+
+#### 課題
+並列Streamを活用して、大量のデータを効率的に処理するプログラムを作成してください。また、並列処理における注意点を理解し、適切に対処してください。以下の要件を満たす必要があります：
+
+1. 大量の整数リストに対して、並列Streamを使用して素数の数をカウントする
+2. 並列処理と逐次処理のパフォーマンスを比較する
+3. 並列処理における注意点（副作用、スレッドセーフティなど）を考慮した実装を行う
+
+#### 雛形コード
+以下のクラスを作成してください：
+
+```java
+package streams.advanced;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * 並列Streamの活用と注意点を学ぶためのデモクラス
+ */
+public class ParallelStreamDemo {
+    
+    // リストのサイズ
+    private static final int LIST_SIZE = 1_000_000;
+    
+    // 乱数生成器
+    private static final Random RANDOM = new Random();
+    
+    /**
+     * 指定されたサイズのランダムな整数リストを生成します。
+     * 
+     * @param size リストのサイズ
+     * @param maxValue 最大値
+     * @return ランダムな整数リスト
+     */
+    public static List<Integer> generateRandomList(int size, int maxValue) {
+        List<Integer> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(RANDOM.nextInt(maxValue) + 1);
+        }
+        return list;
+    }
+    
+    /**
+     * 数値が素数かどうかを判定します。
+     * 
+     * @param n 判定する数値
+     * @return 素数の場合はtrue、そうでない場合はfalse
+     */
+    public static boolean isPrime(int n) {
+        if (n <= 1) {
+            return false;
+        }
+        if (n <= 3) {
+            return true;
+        }
+        if (n % 2 == 0 || n % 3 == 0) {
+            return false;
+        }
+        int i = 5;
+        while (i * i <= n) {
+            if (n % i == 0 || n % (i + 2) == 0) {
+                return false;
+            }
+            i += 6;
+        }
+        return true;
+    }
+    
+    /**
+     * 逐次Streamを使用して、リスト内の素数の数をカウントします。
+     * 
+     * @param numbers 整数のリスト
+     * @return 素数の数
+     */
+    public static long countPrimesWithSequentialStream(List<Integer> numbers) {
+        // TODO: ここに逐次Streamを使用したコードを実装
+        // ヒント1: streamメソッドを使用してStreamを作成
+        // ヒント2: filterメソッドを使用して素数のみをフィルタリング
+        // ヒント3: countメソッドを使用して素数の数をカウント
+        
+        return 0; // 仮の戻り値
+    }
+    
+    /**
+     * 並列Streamを使用して、リスト内の素数の数をカウントします。
+     * 
+     * @param numbers 整数のリスト
+     * @return 素数の数
+     */
+    public static long countPrimesWithParallelStream(List<Integer> numbers) {
+        // TODO: ここに並列Streamを使用したコードを実装
+        // ヒント1: parallelStreamメソッドを使用して並列Streamを作成
+        // ヒント2: filterメソッドを使用して素数のみをフィルタリング
+        // ヒント3: countメソッドを使用して素数の数をカウント
+        
+        return 0; // 仮の戻り値
+    }
+    
+    /**
+     * 外部カウンターを使用して、リスト内の素数の数をカウントします（非スレッドセーフな実装）。
+     * 
+     * @param numbers 整数のリスト
+     * @return 素数の数
+     */
+    public static int countPrimesWithExternalCounter(List<Integer> numbers) {
+        // TODO: ここに外部カウンターを使用したコードを実装
+        // ヒント1: 外部カウンターを使用（非スレッドセーフ）
+        // ヒント2: parallelStreamメソッドを使用して並列Streamを作成
+        // ヒント3: forEachメソッドを使用して各要素を処理
+        
+        return 0; // 仮の戻り値
+    }
+    
+    /**
+     * AtomicIntegerを使用して、リスト内の素数の数をカウントします（スレッドセーフな実装）。
+     * 
+     * @param numbers 整数のリスト
+     * @return 素数の数
+     */
+    public static int countPrimesWithAtomicCounter(List<Integer> numbers) {
+        // TODO: ここにAtomicIntegerを使用したコードを実装
+        // ヒント1: AtomicIntegerを使用（スレッドセーフ）
+        // ヒント2: parallelStreamメソッドを使用して並列Streamを作成
+        // ヒント3: forEachメソッドを使用して各要素を処理
+        
+        return 0; // 仮の戻り値
+    }
+    
+    /**
+     * 処理の実行時間を測定します。
+     * 
+     * @param operation 実行する処理
+     * @return 実行時間（ミリ秒）
+     */
+    public static long measureExecutionTime(Runnable operation) {
+        long startTime = System.currentTimeMillis();
+        operation.run();
+        long endTime = System.currentTimeMillis();
+        return endTime - startTime;
+    }
+    
+    public static void main(String[] args) {
+        // ランダムな整数リストを生成
+        System.out.println("ランダムな整数リストを生成中...");
+        List<Integer> numbers = generateRandomList(LIST_SIZE, 1000000);
+        System.out.println("リストサイズ: " + numbers.size());
+        
+        // 逐次Streamと並列Streamのパフォーマンス比較
+        System.out.println("\n===== 逐次Streamと並列Streamのパフォーマンス比較 =====");
+        
+        // 逐次Streamを使用した場合
+        long sequentialTime = measureExecutionTime(() -> {
+            long count = countPrimesWithSequentialStream(numbers);
+            System.out.println("逐次Streamの結果: " + count + "個の素数");
+        });
+        System.out.println("逐次Streamの実行時間: " + sequentialTime + "ms");
+        
+        // 並列Streamを使用した場合
+        long parallelTime = measureExecutionTime(() -> {
+            long count = countPrimesWithParallelStream(numbers);
+            System.out.println("並列Streamの結果: " + count + "個の素数");
+        });
+        System.out.println("並列Streamの実行時間: " + parallelTime + "ms");
+        
+        // 比率を計算
+        double ratio1 = (double) sequentialTime / parallelTime;
+        System.out.printf("逐次Stream / 並列Streamの比率: %.2f%n", ratio1);
+        
+        // 外部カウンターとAtomicIntegerのパフォーマンス比較
+        System.out.println("\n===== 外部カウンターとAtomicIntegerのパフォーマンス比較 =====");
+        
+        // 外部カウンターを使用した場合（非スレッドセーフ）
+        long externalCounterTime = measureExecutionTime(() -> {
+            int count = countPrimesWithExternalCounter(numbers);
+            System.out.println("外部カウンターの結果: " + count + "個の素数");
+        });
+        System.out.println("外部カウンターの実行時間: " + externalCounterTime + "ms");
+        
+        // AtomicIntegerを使用した場合（スレッドセーフ）
+        long atomicCounterTime = measureExecutionTime(() -> {
+            int count = countPrimesWithAtomicCounter(numbers);
+            System.out.println("AtomicIntegerの結果: " + count + "個の素数");
+        });
+        System.out.println("AtomicIntegerの実行時間: " + atomicCounterTime + "ms");
+        
+        // 比率を計算
+        double ratio2 = (double) externalCounterTime / atomicCounterTime;
+        System.out.printf("外部カウンター / AtomicIntegerの比率: %.2f%n", ratio2);
+        
+        // 結果のまとめ
+        System.out.println("\n===== 結果のまとめ =====");
+        System.out.println("1. 逐次Streamと並列Streamのパフォーマンス比較:");
+        System.out.println("   - 逐次Stream: " + sequentialTime + "ms");
+        System.out.println("   - 並列Stream: " + parallelTime + "ms");
+        System.out.printf("   - 比率（逐次Stream / 並列Stream）: %.2f%n", ratio1);
+        
+        System.out.println("2. 外部カウンターとAtomicIntegerのパフォーマンス比較:");
+        System.out.println("   - 外部カウンター（非スレッドセーフ）: " + externalCounterTime + "ms");
+        System.out.println("   - AtomicInteger（スレッドセーフ）: " + atomicCounterTime + "ms");
+        System.out.printf("   - 比率（外部カウンター / AtomicInteger）: %.2f%n", ratio2);
+        
+        System.out.println("\n===== 並列処理における注意点 =====");
+        // TODO: ここに並列処理における注意点を記述
+    }
+}
+```
+
+#### 実装ヒント
+1. `countPrimesWithSequentialStream`メソッドでは、`stream()`メソッドを使用してStreamを作成し、`filter(ParallelStreamDemo::isPrime)`を使用して素数のみをフィルタリングし、`count()`を使用して素数の数をカウントします。
+2. `countPrimesWithParallelStream`メソッドでは、`parallelStream()`メソッドを使用して並列Streamを作成し、それ以外は`countPrimesWithSequentialStream`メソッドと同様に実装します。
+3. `countPrimesWithExternalCounter`メソッドでは、外部カウンターを使用して素数の数をカウントします。ただし、この実装は非スレッドセーフであるため、並列処理では正確な結果が得られない可能性があります。
+4. `countPrimesWithAtomicCounter`メソッドでは、`AtomicInteger`を使用して素数の数をカウントします。この実装はスレッドセーフであるため、並列処理でも正確な結果が得られます。
+5. 並列処理における注意点として、副作用（外部状態の変更）、スレッドセーフティ、実行順序の非決定性、スレッドプールのサイズなどを考慮する必要があります。
+
+### 発展演習2: Stream APIの遅延評価と短絡評価（難易度：発展）
+
+#### 課題
+Stream APIの遅延評価と短絡評価の特性を理解し、それらを活用したプログラムを作成してください。以下の要件を満たす必要があります：
+
+1. 無限Streamを使用して、特定の条件を満たす要素を生成する
+2. 遅延評価を活用して、必要な要素だけを計算する
+3. 短絡評価を活用して、条件を満たす最初の要素を見つける
+
+#### 雛形コード
+以下のクラスを作成してください：
+
+```java
+package streams.advanced;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+/**
+ * Stream APIの遅延評価と短絡評価を学ぶためのデモクラス
+ */
+public class LazyEvaluationDemo {
+    
+    /**
+     * 指定された数値が素数かどうかを判定します。
+     * 
+     * @param n 判定する数値
+     * @return 素数の場合はtrue、そうでない場合はfalse
+     */
+    public static boolean isPrime(int n) {
+        System.out.println("isPrime(" + n + ")を評価中...");
+        if (n <= 1) {
+            return false;
+        }
+        if (n <= 3) {
+            return true;
+        }
+        if (n % 2 == 0 || n % 3 == 0) {
+            return false;
+        }
+        int i = 5;
+        while (i * i <= n) {
+            if (n % i == 0 || n % (i + 2) == 0) {
+                return false;
+            }
+            i += 6;
+        }
+        return true;
+    }
+    
+    /**
+     * 指定された数値が完全数かどうかを判定します。
+     * 完全数とは、自分自身を除く約数の和が自分自身と等しい数のことです。
+     * 
+     * @param n 判定する数値
+     * @return 完全数の場合はtrue、そうでない場合はfalse
+     */
+    public static boolean isPerfect(int n) {
+        System.out.println("isPerfect(" + n + ")を評価中...");
+        if (n <= 1) {
+            return false;
+        }
+        int sum = 1;
+        for (int i = 2; i * i <= n; i++) {
+            if (n % i == 0) {
+                sum += i;
+                if (i != n / i) {
+                    sum += n / i;
+                }
+            }
+        }
+        return sum == n;
+    }
+    
+    /**
+     * 無限Streamを使用して、最初のn個の素数を生成します。
+     * 
+     * @param n 生成する素数の数
+     * @return 最初のn個の素数のリスト
+     */
+    public static List<Integer> generateFirstNPrimes(int n) {
+        // TODO: ここに無限Streamを使用したコードを実装
+        // ヒント1: Stream.iterateメソッドを使用して無限Streamを作成
+        // ヒント2: filterメソッドを使用して素数のみをフィルタリング
+        // ヒント3: limitメソッドを使用して最初のn個の要素を取得
+        // ヒント4: collectメソッドを使用して結果をリストに変換
+        
+        return null; // 仮の戻り値
+    }
+    
+    /**
+     * 無限Streamを使用して、指定された範囲内の最初の完全数を見つけます。
+     * 
+     * @param start 開始値
+     * @param end 終了値
+     * @return 最初の完全数、見つからない場合は-1
+     */
+    public static int findFirstPerfectNumber(int start, int end) {
+        // TODO: ここに無限Streamを使用したコードを実装
+        // ヒント1: IntStreamのrangeメソッドを使用して範囲内の数値のStreamを作成
+        // ヒント2: filterメソッドを使用して完全数のみをフィルタリング
+        // ヒント3: findFirstメソッドを使用して最初の要素を取得
+        // ヒント4: orElseメソッドを使用して見つからない場合のデフォルト値を設定
+        
+        return -1; // 仮の戻り値
+    }
+    
+    /**
+     * 無限Streamを使用して、フィボナッチ数列の最初のn項を生成します。
+     * 
+     * @param n 生成する項の数
+     * @return フィボナッチ数列の最初のn項のリスト
+     */
+    public static List<Integer> generateFibonacciSequence(int n) {
+        // TODO: ここに無限Streamを使用したコードを実装
+        // ヒント1: Stream.iterateメソッドを使用して無限Streamを作成
+        // ヒント2: limitメソッドを使用して最初のn個の要素を取得
+        // ヒント3: collectメソッドを使用して結果をリストに変換
+        
+        return null; // 仮の戻り値
+    }
+    
+    /**
+     * 遅延評価と短絡評価を示すデモを実行します。
+     */
+    public static void demonstrateLazyAndShortCircuitEvaluation() {
+        System.out.println("===== 遅延評価のデモ =====");
+        
+        // TODO: ここに遅延評価を示すコードを実装
+        // ヒント1: 中間操作（filter, map, peekなど）を連鎖させる
+        // ヒント2: 終端操作を呼び出さない場合、中間操作は実行されない
+        // ヒント3: 終端操作を呼び出した場合、中間操作が実行される
+        
+        System.out.println("\n===== 短絡評価のデモ =====");
+        
+        // TODO: ここに短絡評価を示すコードを実装
+        // ヒント1: findFirst, findAny, anyMatch, allMatch, noneMatchなどの短絡終端操作を使用
+        // ヒント2: 結果が確定した時点で処理が終了することを示す
+    }
+    
+    public static void main(String[] args) {
+        // 最初のn個の素数の生成
+        System.out.println("===== 最初の10個の素数 =====");
+        List<Integer> primes = generateFirstNPrimes(10);
+        System.out.println(primes);
+        
+        // 指定された範囲内の最初の完全数の検索
+        System.out.println("\n===== 1から10000までの最初の完全数 =====");
+        int perfectNumber = findFirstPerfectNumber(1, 10000);
+        System.out.println("最初の完全数: " + perfectNumber);
+        
+        // フィボナッチ数列の生成
+        System.out.println("\n===== 最初の20項のフィボナッチ数列 =====");
+        List<Integer> fibonacciSequence = generateFibonacciSequence(20);
+        System.out.println(fibonacciSequence);
+        
+        // 遅延評価と短絡評価のデモ
+        System.out.println("\n===== 遅延評価と短絡評価のデモ =====");
+        demonstrateLazyAndShortCircuitEvaluation();
+        
+        System.out.println("\n===== Stream APIの遅延評価と短絡評価の利点 =====");
+        // TODO: ここにStream APIの遅延評価と短絡評価の利点を記述
+    }
+}
+```
+
+#### 実装ヒント
+1. `generateFirstNPrimes`メソッドでは、`Stream.iterate(2, n -> n + 1)`を使用して無限Streamを作成し、`filter(LazyEvaluationDemo::isPrime)`を使用して素数のみをフィルタリングし、`limit(n)`を使用して最初のn個の要素を取得し、`collect(Collectors.toList())`を使用して結果をリストに変換します。
+2. `findFirstPerfectNumber`メソッドでは、`IntStream.range(start, end + 1)`を使用して範囲内の数値のStreamを作成し、`filter(LazyEvaluationDemo::isPerfect)`を使用して完全数のみをフィルタリングし、`findFirst()`を使用して最初の要素を取得し、`orElse(-1)`を使用して見つからない場合のデフォルト値を設定します。
+3. `generateFibonacciSequence`メソッドでは、`Stream.iterate(new int[]{0, 1}, f -> new int[]{f[1], f[0] + f[1]})`を使用して無限Streamを作成し、`map(f -> f[0])`を使用して最初の要素を抽出し、`limit(n)`を使用して最初のn個の要素を取得し、`collect(Collectors.toList())`を使用して結果をリストに変換します。
+4. `demonstrateLazyAndShortCircuitEvaluation`メソッドでは、遅延評価と短絡評価を示すデモを実行します。遅延評価では、中間操作（filter, map, peekなど）を連鎖させ、終端操作を呼び出さない場合は中間操作が実行されないことを示します。短絡評価では、findFirst, findAny, anyMatch, allMatch, noneMatchなどの短絡終端操作を使用し、結果が確定した時点で処理が終了することを示します。
+
+## 解説と補足
+
+### Stream APIの遅延評価
+
+Stream APIの中間操作は遅延評価されます。つまり、終端操作が呼び出されるまで実行されません。これにより、以下のような利点があります：
+
+1. **不要な計算の回避**：
+   - 必要な要素だけを計算することで、パフォーマンスを向上させることができます。
+   - 例えば、`limit(n)`を使用すると、最初のn個の要素だけが処理されます。
+
+2. **無限Streamの処理**：
+   - 遅延評価により、無限Streamを扱うことができます。
+   - 例えば、`Stream.iterate(0, n -> n + 1)`は無限の整数Streamを生成しますが、`limit(n)`を使用することで有限の結果を得ることができます。
+
+3. **最適化の機会**：
+   - 遅延評価により、実行時に最適化を行うことができます。
+   - 例えば、`filter`と`map`の順序を入れ替えることで、処理する要素の数を減らすことができます。
+
+### Stream APIの短絡評価
+
+一部の終端操作（findFirst, findAny, anyMatch, allMatch, noneMatchなど）は短絡評価をサポートしています。つまり、結果が確定した時点で処理を終了します。これにより、以下のような利点があります：
+
+1. **早期終了**：
+   - 条件を満たす要素が見つかった時点で処理を終了することで、パフォーマンスを向上させることができます。
+   - 例えば、`anyMatch`は条件を満たす要素が1つでも見つかれば`true`を返し、処理を終了します。
+
+2. **無限Streamの処理**：
+   - 短絡評価により、無限Streamでも終了する可能性があります。
+   - 例えば、`Stream.iterate(0, n -> n + 1).anyMatch(n -> n > 100)`は`true`を返し、処理を終了します。
+
+3. **不要な計算の回避**：
+   - 結果が確定した時点で処理を終了することで、不要な計算を回避することができます。
+   - 例えば、`allMatch`は条件を満たさない要素が1つでも見つかれば`false`を返し、処理を終了します。
+
+### Stream APIと並列処理
+
+Stream APIは並列処理をサポートしています。`parallelStream()`メソッドを使用するか、`parallel()`メソッドを呼び出すことで、並列Streamを作成できます。並列処理には以下のような特徴があります：
+
+1. **マルチコアの活用**：
+   - 並列処理により、マルチコアプロセッサの性能を活用することができます。
+   - 特に、大量のデータを処理する場合に効果的です。
+
+2. **スレッドセーフティの考慮**：
+   - 並列処理では、スレッドセーフティを考慮する必要があります。
+   - 外部状態を変更する場合は、`AtomicInteger`などのスレッドセーフなクラスを使用する必要があります。
+
+3. **実行順序の非決定性**：
+   - 並列処理では、実行順序が非決定的になります。
+   - 順序に依存する処理を行う場合は、注意が必要です。
+
+4. **オーバーヘッド**：
+   - 並列処理にはオーバーヘッドがあります。
+   - 小さなデータセットや単純な操作では、逐次処理の方が効率的な場合があります。
+
+### Stream APIの使い分け
+
+Stream APIと従来のループ処理は、それぞれ異なる状況で適しています。以下に、それぞれの使い分けの指針を示します。
+
+#### Stream APIが適している場合
+
+1. **宣言的なコード**：
+   - 「何を行うか」を明確に表現したい場合
+   - コードの可読性を重視する場合
+
+2. **関数型プログラミング**：
+   - 関数型プログラミングのスタイルを採用している場合
+   - 副作用を最小限に抑えたい場合
+
+3. **複雑な変換**：
+   - 複数の変換操作を連鎖させる場合
+   - フィルタリング、マッピング、集約などの操作を組み合わせる場合
+
+4. **並列処理**：
+   - マルチコアプロセッサの性能を活用したい場合
+   - 大量のデータを処理する場合
+
+#### 従来のループ処理が適している場合
+
+1. **命令的なコード**：
+   - 「どのように行うか」を明確に制御したい場合
+   - 処理の詳細を明示的に記述したい場合
+
+2. **単純な操作**：
+   - 単純なループ処理で十分な場合
+   - オーバーヘッドを最小限に抑えたい場合
+
+3. **副作用**：
+   - 外部状態を変更する必要がある場合
+   - 複雑な条件分岐や制御フローが必要な場合
+
+4. **デバッグ**：
+   - デバッグが容易である必要がある場合
+   - 処理の各ステップを追跡したい場合
+
+### Stream APIのパフォーマンス
+
+Stream APIのパフォーマンスは、使用する操作や処理するデータの特性によって異なります。以下に、パフォーマンスに関する考慮事項を示します。
+
+1. **オーバーヘッド**：
+   - Stream APIには、ラムダ式の生成、Streamの作成などのオーバーヘッドがあります。
+   - 小さなデータセットや単純な操作では、従来のループ処理の方がパフォーマンスが良い場合があります。
+
+2. **並列処理**：
+   - 大量のデータを処理する場合、並列処理によりパフォーマンスを向上させることができます。
+   - ただし、並列処理にはオーバーヘッドがあるため、データセットのサイズや操作の複雑さによっては、逐次処理の方が効率的な場合があります。
+
+3. **遅延評価**：
+   - 遅延評価により、不要な計算を回避することができます。
+   - 特に、`limit`や`findFirst`などの操作と組み合わせると、効果的です。
+
+4. **短絡評価**：
+   - 短絡評価により、結果が確定した時点で処理を終了することができます。
+   - 特に、`anyMatch`や`findFirst`などの操作で効果的です。
+
+5. **ボックス化とアンボックス化**：
+   - プリミティブ型のボックス化とアンボックス化のオーバーヘッドを避けるために、`IntStream`、`LongStream`、`DoubleStream`などのプリミティブ型のStreamを使用することを検討してください。
+
+## 実務での活用シーン
+
+### 1. データ変換パイプライン
+
+Stream APIは、データの変換パイプラインを構築するのに適しています。複数の変換操作を連鎖させることで、データを段階的に処理することができます。
+
+```java
+// ユーザーのリストから、30歳以上のユーザーの名前を取得し、アルファベット順にソートする
+List<String> sortedNames = users.stream()
+                               .filter(user -> user.getAge() >= 30)
+                               .map(User::getName)
+                               .sorted()
+                               .collect(Collectors.toList());
+```
+
+このようなデータ変換パイプラインは、ETL（Extract, Transform, Load）処理や、データの前処理、クレンジング、正規化などのタスクで活用できます。
+
+### 2. 集計処理
+
+Stream APIは、データの集計処理に適しています。`collect`メソッドと`Collectors`クラスを組み合わせることで、様々な集計操作を行うことができます。
+
+```java
+// 部門ごとの平均給与を計算する
+Map<String, Double> averageSalaryByDepartment = employees.stream()
+                                                      .collect(Collectors.groupingBy(
+                                                          Employee::getDepartment,
+                                                          Collectors.averagingDouble(Employee::getSalary)
+                                                      ));
+
+// 給与の合計、平均、最小、最大を計算する
+DoubleSummaryStatistics salaryStats = employees.stream()
+                                            .collect(Collectors.summarizingDouble(Employee::getSalary));
+System.out.println("合計: " + salaryStats.getSum());
+System.out.println("平均: " + salaryStats.getAverage());
+System.out.println("最小: " + salaryStats.getMin());
+System.out.println("最大: " + salaryStats.getMax());
+System.out.println("件数: " + salaryStats.getCount());
+```
+
+このような集計処理は、レポート生成、データ分析、ダッシュボード表示などのタスクで活用できます。
+
+### 3. 並列処理
+
+Stream APIの並列処理機能は、大量のデータを効率的に処理するのに適しています。特に、CPUバウンドな処理（計算量の多い処理）で効果的です。
+
+```java
+// 大量の数値の合計を並列処理で計算する
+long sum = numbers.parallelStream()
+                 .mapToLong(Long::valueOf)
+                 .sum();
+
+// 大量のファイルを並列処理で処理する
+Files.list(Paths.get("/path/to/directory"))
+     .parallel()
+     .filter(Files::isRegularFile)
+     .forEach(file -> processFile(file));
+```
+
+このような並列処理は、バッチ処理、データマイニング、シミュレーション、画像処理などのタスクで活用できます。
+
+### 4. 条件検索と抽出
+
+Stream APIは、条件に一致する要素を検索し、抽出するのに適しています。`filter`メソッドと`findFirst`、`findAny`、`anyMatch`などのメソッドを組み合わせることで、効率的に検索を行うことができます。
+
+```java
+// 特定の条件に一致する最初のユーザーを検索する
+Optional<User> user = users.stream()
+                          .filter(u -> u.getName().equals("Alice"))
+                          .findFirst();
+
+// 特定の条件に一致するユーザーが存在するかどうかを確認する
+boolean exists = users.stream()
+                     .anyMatch(u -> u.getAge() > 30 && u.getDepartment().equals("開発"));
+```
+
+このような条件検索と抽出は、検索機能、フィルタリング機能、バリデーション機能などのタスクで活用できます。
+
+これらの実務での活用シーンを参考に、Stream APIを効果的に活用してください。Stream APIは、コードの可読性、保守性、効率性を向上させる強力なツールです。
