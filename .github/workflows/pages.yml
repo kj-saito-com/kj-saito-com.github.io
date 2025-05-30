@@ -20,12 +20,11 @@ jobs:
           source ~/.bashrc
           gem install bundler jekyll minima --user-install
 
-      - name: Build java_sql_spring_curriculum site
-        run: |
           bundle init
           echo 'gem "jekyll"' >> Gemfile
           echo 'gem "minima"' >> Gemfile
           bundle install
+
           bundle exec jekyll build \
             --source java_sql_spring_curriculum \
             --destination _site/java_sql_spring_curriculum
