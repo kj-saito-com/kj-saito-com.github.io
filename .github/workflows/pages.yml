@@ -1,0 +1,37 @@
+name: Build and Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Ruby and install Jekyll
+        run: |
+          sudo apt-get update
+          sudo apt-get install ruby-full build-essential zlib1g-dev -y
+          echo '# Install Ruby Gems to ~/.gem' >> ~/.bashrc
+          echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
+          echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
+          source ~/.bashrc
+          gem install bundler jekyll minima
+
+      - name: Build java_sql_spring_curriculum site
+        run: |
+          bundle init
+          echo 'gem "jekyll"' >> Gemfile
+          echo 'gem "minima"' >> Gemfile
+          bundle install
+          bundle exec jekyll build \
+            --source java_sql_spring_curriculum \
+            --destination _site/java_sql_spring_curriculum
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
