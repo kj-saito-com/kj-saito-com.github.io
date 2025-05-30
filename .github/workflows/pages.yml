@@ -18,7 +18,7 @@ jobs:
           echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
           echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
           source ~/.bashrc
-          gem install bundler jekyll minima
+          gem install bundler jekyll minima --user-install
 
       - name: Build java_sql_spring_curriculum site
         run: |
