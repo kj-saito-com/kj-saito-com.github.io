@@ -1,49 +1,28 @@
-name: Deploy GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
-permissions:
-  contents: write
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Ruby and install Jekyll
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install ruby-full build-essential zlib1g-dev -y
-
-          echo 'export GEM_HOME="$HOME/.local/share/gem"' >> $GITHUB_ENV
-          echo 'export PATH="$HOME/.local/share/gem/ruby/3.2.0/bin:$PATH"' >> $GITHUB_ENV
-
           gem install bundler jekyll minima
 
-      - name: Build java_sql_spring_curriculum site
+      - name: Build site
         run: |
-          cd java_sql_spring_curriculum
-          bundle init
-          echo 'gem "jekyll"' >> Gemfile
-          echo 'gem "minima"' >> Gemfile
-          bundle install
-          bundle exec jekyll build --source . --destination ../_site/java_sql_spring_curriculum
-
-      # サブサイトが増えたらここに build を追加する
-      # - name: Build other_subsite
-      #   run: |
-      #     cd other_subsite
-      #     bundle init
-      #     echo 'gem "jekyll"' >> Gemfile
-      #     echo 'gem "minima"' >> Gemfile
-      #     bundle install
-      #     bundle exec jekyll build --source . --destination ../_site/other_subsite
+          jekyll build --source java_sql_spring_curriculum --destination _site/java_sql_spring_curriculum
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
