@@ -1,33 +1,49 @@
-name: Build and Deploy GitHub Pages
+name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v3
 
       - name: Set up Ruby and install Jekyll
         run: |
           sudo apt-get update
           sudo apt-get install ruby-full build-essential zlib1g-dev -y
-          echo '# Install Ruby Gems to ~/.gem' >> ~/.bashrc
-          echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
-          echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
-          source ~/.bashrc
-          gem install bundler jekyll minima --user-install
 
+          echo 'export GEM_HOME="$HOME/.local/share/gem"' >> $GITHUB_ENV
+          echo 'export PATH="$HOME/.local/share/gem/ruby/3.2.0/bin:$PATH"' >> $GITHUB_ENV
+
+          gem install bundler jekyll minima
+
+      - name: Build java_sql_spring_curriculum site
+        run: |
+          cd java_sql_spring_curriculum
           bundle init
           echo 'gem "jekyll"' >> Gemfile
           echo 'gem "minima"' >> Gemfile
           bundle install
+          bundle exec jekyll build --source . --destination ../_site/java_sql_spring_curriculum
 
-          bundle exec jekyll build \
-            --source java_sql_spring_curriculum \
-            --destination _site/java_sql_spring_curriculum
+      # サブサイトが増えたらここに build を追加する
+      # - name: Build other_subsite
+      #   run: |
+      #     cd other_subsite
+      #     bundle init
+      #     echo 'gem "jekyll"' >> Gemfile
+      #     echo 'gem "minima"' >> Gemfile
+      #     bundle install
+      #     bundle exec jekyll build --source . --destination ../_site/other_subsite
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
