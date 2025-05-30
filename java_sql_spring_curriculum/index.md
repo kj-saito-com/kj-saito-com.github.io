@@ -45,7 +45,7 @@ PostgreSQLを使用した実践的なSQL操作、パフォーマンスチュー�
 - **Day 7**: <a href="phase2/day7">複雑なJOINとサブクエリの活用</a>
 - **Day 8**: <a href="phase2/day8">集計関数と分析関数の実践的活用</a>
 - **Day 9**: <a href="phase2/day9">SQLパフォーマンスチューニングの実践</a>
-- **Day 10**: <a href=phase2/day10">SQLトラブルシューティングとトランザクション管理</a>
+- **Day 10**: <a href="phase2/day10">SQLトラブルシューティングとトランザクション管理</a>
 
 ### Phase 3: Spring（TERASOLUNA）でのWebアプリ開発実践（Day 11〜20）
 TERASOLUNAフレームワークを使用したWebアプリケーション開発の全工程を学び、実際にToDoアプリケーションを構築します。
