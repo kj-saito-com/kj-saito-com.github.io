@@ -32,20 +32,20 @@
 ### Phase 1: Java理解度確認（Day 1〜5）
 Java言語の基本的な機能から応用的な概念まで、実践的な演習を通じて理解度を確認・強化します。
 
-- **Day 1**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase1/day1">入出力処理の基本と応用 </a>
-- **Day 2**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase1/day2">コレクションフレームワークの効果的な活用</a>
-- **Day 3**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase1/day3">ラムダ式と匿名クラスの適切な使い分け</a>
-- **Day 4**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase1/day4">例外処理の設計と実装</a>
-- **Day 5**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase1/day5">Stream APIとループ処理の比較と選択</a>
+- **Day 1**: <a href="phase1/day1">入出力処理の基本と応用 </a>
+- **Day 2**: <a href="phase1/day2">コレクションフレームワークの効果的な活用</a>
+- **Day 3**: <a href="phase1/day3">ラムダ式と匿名クラスの適切な使い分け</a>
+- **Day 4**: <a href="phase1/day4">例外処理の設計と実装</a>
+- **Day 5**: <a href="phase1/day5">Stream APIとループ処理の比較と選択</a>
 
 ### Phase 2: SQL応用（Day 6〜10）
 PostgreSQLを使用した実践的なSQL操作、パフォーマンスチューニング、トラブルシューティングを学びます。
 
-- **Day 6**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day6">PostgreSQL環境構築と基本操作</a>
-- **Day 7**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day7">複雑なJOINとサブクエリの活用</a>
-- **Day 8**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day8">集計関数と分析関数の実践的活用</a>
-- **Day 9**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day9">SQLパフォーマンスチューニングの実践</a>
-- **Day 10**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day10">SQLトラブルシューティングとトランザクション管理</a>
+- **Day 6**: <a href="phase2/day6">PostgreSQL環境構築と基本操作</a>
+- **Day 7**: <a href="phase2/day7">複雑なJOINとサブクエリの活用</a>
+- **Day 8**: <a href="phase2/day8">集計関数と分析関数の実践的活用</a>
+- **Day 9**: <a href="phase2/day9">SQLパフォーマンスチューニングの実践</a>
+- **Day 10**: <a href=phase2/day10">SQLトラブルシューティングとトランザクション管理</a>
 
 ### Phase 3: Spring（TERASOLUNA）でのWebアプリ開発実践（Day 11〜20）
 TERASOLUNAフレームワークを使用したWebアプリケーション開発の全工程を学び、実際にToDoアプリケーションを構築します。
