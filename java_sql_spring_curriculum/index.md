@@ -41,11 +41,11 @@ Java言語の基本的な機能から応用的な概念まで、実践的な演�
 ### Phase 2: SQL応用（Day 6〜10）
 PostgreSQLを使用した実践的なSQL操作、パフォーマンスチューニング、トラブルシューティングを学びます。
 
-- **Day 6**: PostgreSQL環境構築と基本操作
-- **Day 7**: 複雑なJOINとサブクエリの活用
-- **Day 8**: 集計関数と分析関数の実践的活用
-- **Day 9**: SQLパフォーマンスチューニングの実践
-- **Day 10**: SQLトラブルシューティングとトランザクション管理
+- **Day 6**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day6">PostgreSQL環境構築と基本操作</a>
+- **Day 7**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day7">複雑なJOINとサブクエリの活用</a>
+- **Day 8**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day8">集計関数と分析関数の実践的活用</a>
+- **Day 9**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day9">SQLパフォーマンスチューニングの実践</a>
+- **Day 10**: <a href="https://kj-saito-com.github.io/java_sql_spring_curriculum/phase2/day10">SQLトラブルシューティングとトランザクション管理</a>
 
 ### Phase 3: Spring（TERASOLUNA）でのWebアプリ開発実践（Day 11〜20）
 TERASOLUNAフレームワークを使用したWebアプリケーション開発の全工程を学び、実際にToDoアプリケーションを構築します。
