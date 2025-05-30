@@ -3,7 +3,7 @@
   {%- assign hyperpage = site.pages | where: "path", path | first -%}
   {%- if hyperpage.title %}
   <li class="nav-item">
-    <a class="nav-item" href="{{ hyperpage.url | absolute_url }}">{{ hyperpage.title | escape }}</a>
+    <a class="nav-item" href="{{ hyperpage.url }}">{{ hyperpage.title | escape }}</a>
   </li>
   {%- endif -%}
   {%- endfor %}
