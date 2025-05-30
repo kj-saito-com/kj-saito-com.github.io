@@ -22,7 +22,7 @@ jobs:
 
       - name: Build site
         run: |
-          jekyll build --config java_sql_spring_curriculum/_config.yml --source java_sql_spring_curriculum --destination _site/java_sql_spring_curriculum
+          jekyll build --config _config.yml,java_sql_spring_curriculum/_config.yml --source java_sql_spring_curriculum --destination _site/java_sql_spring_curriculum
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
