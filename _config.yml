@@ -1,3 +1,5 @@
 # Root config (can be empty or shared settings)
 #theme: minima
 theme: null
+plugins:
+  - jekyll-seo-tag
