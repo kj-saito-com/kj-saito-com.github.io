@@ -2,4 +2,5 @@
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
 
-@import "minima";
+// @import "minima"; ← これは消す
+@import "base", "layout", "syntax-highlighting"; // minima の中の SCSS ファイルを指定
