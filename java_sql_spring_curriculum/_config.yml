@@ -1,9 +1,7 @@
 title: Java SQL Spring Curriculum
 description: Java・SQL・Springの学習カリキュラム
-theme: minima
+#theme: minima
+theme: null
 baseurl: "/java_sql_spring_curriculum"
-sass:
-  load_paths:
-    - _sass
 minima:
   nav_pages:
