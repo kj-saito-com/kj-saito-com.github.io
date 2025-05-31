@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 5: Stream APIとループ処理の比較と選択 - 解答例
+title: "Day 5: Stream APIとループ処理の比較と選択 - 解答例"
 ---
 # Day 5: Stream APIとループ処理の比較と選択 - 解答例
 

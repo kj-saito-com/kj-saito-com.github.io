@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 18: Domain層の実装
+title: "Day 18: Domain層の実装"
 ---
 # Day 18: Domain層の実装
 

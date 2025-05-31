@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク - 解答例
+title: "Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク - 解答例"
 ---
 # Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク - 解答例
 

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 4: 例外処理の設計と実装
+title: "Day 4: 例外処理の設計と実装"
 ---
 # Day 4: 例外処理の設計と実装
 

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 17: Repository層の実装
+title: "Day 17: Repository層の実装"
 ---
 # Day 17: Repository層の実装
 

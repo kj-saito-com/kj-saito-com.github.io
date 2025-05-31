@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 6: PostgreSQL環境構築と基本操作 - 解答例
+title: "Day 6: PostgreSQL環境構築と基本操作 - 解答例"
 ---
 # Day 6: PostgreSQL環境構築と基本操作 - 解答例
 

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 9: SQLパフォーマンスチューニングの実践
+title: "Day 9: SQLパフォーマンスチューニングの実践"
 ---
 # Day 9: SQLパフォーマンスチューニングの実践
 

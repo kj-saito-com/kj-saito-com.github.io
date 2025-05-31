@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 14: ToDoアプリケーションの要件定義と設計
+title: "Day 14: ToDoアプリケーションの要件定義と設計"
 ---
 # Day 14: ToDoアプリケーションの要件定義と設計
 

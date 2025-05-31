@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 15: Controller層の実装 - 解答例
+title: "Day 15: Controller層の実装 - 解答例"
 ---
 # Day 15: Controller層の実装 - 解答例
 

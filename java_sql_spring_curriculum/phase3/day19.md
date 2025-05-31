@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 19: Form/DTOの実装
+title: "Day 19: Form/DTOの実装"
 ---
 # Day 19: Form/DTOの実装
 

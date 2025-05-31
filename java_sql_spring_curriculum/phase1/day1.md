@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 1: 入出力処理の基本と応用
+title: "Day 1: 入出力処理の基本と応用"
 ---
 # Day 1: 入出力処理の基本と応用
 

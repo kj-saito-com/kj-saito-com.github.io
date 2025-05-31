@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 17: Repository層の実装 - 解答例
+title: "Day 17: Repository層の実装 - 解答例"
 ---
 # Day 17: Repository層の実装 - 解答例
 

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 16: Service層の実装 - 解答例
+title: "Day 16: Service層の実装 - 解答例"
 ---
 # Day 16: Service層の実装 - 解答例
 

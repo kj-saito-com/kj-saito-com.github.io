@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク
+title: "Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク"
 ---
 # Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク
 

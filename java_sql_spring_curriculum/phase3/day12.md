@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計
+title: "Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計"
 ---
 # Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計
 

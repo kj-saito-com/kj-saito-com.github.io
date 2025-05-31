@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 7: 複雑なJOINとサブクエリの活用 - 解答例
+title: "Day 7: 複雑なJOINとサブクエリの活用 - 解答例"
 ---
 # Day 7: 複雑なJOINとサブクエリの活用 - 解答例
 

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Day 20: View（JSP）層の実装と総合演習
+title: "Day 20: View（JSP）層の実装と総合演習"
 ---
 # Day 20: View（JSP）層の実装と総合演習
 
