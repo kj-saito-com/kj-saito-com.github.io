@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 14: ToDoアプリケーションの要件定義と設計
+---
 # Day 14: ToDoアプリケーションの要件定義と設計
 
 ## 学習の目的と背景

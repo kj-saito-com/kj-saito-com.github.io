@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク
+---
 # Day 11: Spring Frameworkの基本概念とTERASOLUNAフレームワーク
 
 ## 学習の目的と背景

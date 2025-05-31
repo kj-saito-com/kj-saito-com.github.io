@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 15: Controller層の実装
+---
 # Day 15: Controller層の実装
 
 ## 学習の目的と背景

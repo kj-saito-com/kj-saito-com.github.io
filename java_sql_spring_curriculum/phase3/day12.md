@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計
+---
 # Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計
 
 ## 学習の目的と背景

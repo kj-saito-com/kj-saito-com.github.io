@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 19: Form/DTOの実装
+---
 # Day 19: Form/DTOの実装
 
 ## 学習の目的と背景

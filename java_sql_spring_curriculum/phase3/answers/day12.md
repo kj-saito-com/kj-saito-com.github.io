@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計 - 解答例
+---
 # Day 12: TERASOLUNAフレームワークの概要とTODOアプリケーションの設計 - 解答例
 
 ## コア演習1: TODOアプリケーションの要件定義書作成

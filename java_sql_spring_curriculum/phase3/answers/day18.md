@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 18: Domain層の実装 - 解答例
+---
 # Day 18: Domain層の実装 - 解答例
 
 ## 課題1: Todoエンティティの実装

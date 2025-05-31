@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 7: 複雑なJOINとサブクエリの活用 - 解答例
+---
 # Day 7: 複雑なJOINとサブクエリの活用 - 解答例
 
 ## 課題1: 複雑なJOIN操作の実践

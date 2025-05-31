@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 7: 複雑なJOINとサブクエリの活用
+---
 # Day 7: 複雑なJOINとサブクエリの活用
 
 ## 学習の目的と背景

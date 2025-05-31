@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 13: MyBatisとPostgreSQLの連携
+---
 # Day 13: MyBatisとPostgreSQLの連携
 
 ## 学習の目的と背景

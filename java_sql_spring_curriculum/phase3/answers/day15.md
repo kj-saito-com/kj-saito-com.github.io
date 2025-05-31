@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 15: Controller層の実装 - 解答例
+---
 # Day 15: Controller層の実装 - 解答例
 
 ## 課題1: TodoControllerの実装

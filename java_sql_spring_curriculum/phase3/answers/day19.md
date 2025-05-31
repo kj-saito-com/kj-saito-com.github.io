@@ -1,3 +1,7 @@
+---
+layout: default
+title: Day 19: Form/DTOの実装 - 解答例
+---
 # Day 19: Form/DTOの実装 - 解答例
 
 ## 課題1: TodoFormの実装
