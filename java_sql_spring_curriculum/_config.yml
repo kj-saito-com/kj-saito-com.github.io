@@ -4,4 +4,4 @@ theme: minima
 baseurl: "/java_sql_spring_curriculum"
 minima:
   nav_pages:
-    - index.md
+    - java_sql_spring_curriculum/index.md
