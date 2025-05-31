@@ -6,10 +6,5 @@ baseurl: "/java_sql_spring_curriculum"
 plugins:
   - jekyll-seo-tag
   - jekyll-feed
-sass:
-  sass_dir: ../_sass     # ✅ ルートの _sass を読み込む
-include:
-  - ../_layouts
-  - ../_includes
 minima:
   nav_pages:
