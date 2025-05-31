@@ -1,3 +1,7 @@
+---
+layout: default
+title: Java・SQL・Spring（TERASOLUNA）学習カリキュラム概要
+---
 # Java・SQL・Spring（TERASOLUNA）学習カリキュラム概要
 
 ## カリキュラムの目的
