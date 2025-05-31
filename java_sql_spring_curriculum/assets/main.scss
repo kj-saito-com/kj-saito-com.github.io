@@ -3,4 +3,6 @@
 ---
 
 // @import "minima"; ← これは消す
-@import "minima/base", "minima/layout", "minima/syntax-highlighting"; // minima の中の SCSS ファイルを指定
+@import "../_sass/minima/base";
+@import "../_sass/minima/layout";
+@import "../_sass/minima/syntax-highlighting";
