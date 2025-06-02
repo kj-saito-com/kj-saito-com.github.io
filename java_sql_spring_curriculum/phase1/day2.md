@@ -1320,3 +1320,7 @@ public Map<String, Double> calculateAverageSalaryByDepartment(List<Employee> emp
 ```
 
 これらの実務での活用シーンを参考に、コレクションフレームワークの重要性と効果的な使い方を理解してください。
+
+## 解答例
+
+<a href="answers/day2">解答例はこちら</a>

@@ -948,3 +948,7 @@ Validator<String> passwordValidator = value -> value.length() >= 8 && value.matc
 ```
 
 これらの実務での活用シーンを参考に、ラムダ式と匿名クラスの適切な使い分けを理解し、効果的に活用してください。
+
+## 解答例
+
+<a href="answers/day3">解答例はこちら</a>

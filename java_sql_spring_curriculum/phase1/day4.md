@@ -1325,3 +1325,7 @@ public UserProfileResponse getUserProfile(String userId) {
 ```
 
 これらの実務での活用シーンを参考に、適切な例外処理を設計し、実装してください。適切な例外処理は、プログラムの堅牢性と保守性を向上させる重要な要素です。
+
+## 解答例
+
+<a href="answers/day4">解答例はこちら</a>

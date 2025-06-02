@@ -873,3 +873,7 @@ public class EnvironmentConfigManager {
 ```
 
 これらの実務での活用シーンを参考に、入出力処理の重要性と効率的な実装方法を理解してください。
+
+## 解答例
+
+<a href="answers/day1">解答例はこちら</a>

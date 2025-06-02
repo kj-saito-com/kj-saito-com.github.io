@@ -330,3 +330,7 @@ CREATE TABLE employees (
    - パフォーマンスチューニング
    - インデックス最適化
    - データ整合性の維持
+
+## 解答例
+
+<a href="answers/day6">解答例はこちら</a>

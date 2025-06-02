@@ -397,3 +397,7 @@ CREATE INDEX idx_departments_department_id ON departments(department_id);
    - 階層データの処理（例：組織構造、製品カテゴリ階層）
    - 条件付き集計（例：特定の条件を満たす項目のみの合計）
    - 複数の関連エンティティにまたがるビジネスルールの適用
+
+## 解答例
+
+<a href="answers/day7">解答例はこちら</a>
