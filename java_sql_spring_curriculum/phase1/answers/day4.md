@@ -4,595 +4,453 @@ title: "Day 4: 例外処理の設計と実装 - 解答例"
 ---
 # Day 4: 例外処理の設計と実装 - 解答例
 
-## コア演習1: 基本的な例外処理
+## 演習1: 基本的な例外処理
 
 ### 解答例
 ```java
-package exception.basic;
+package exceptions.basic;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
-public class BasicExceptionHandling {
-
+/**
+ * 基本的な例外処理を学ぶためのデモクラス
+ */
+public class FileReaderDemo {
+    
     /**
-     * try-catch-finallyを使用したファイル読み込み
+     * 従来のtry-catch-finally構文を使用してファイルを読み込みます。
+     * 
+     * @param fileName 読み込むファイルのパス
+     * @return ファイルの最初の行、ファイルが空の場合は空文字列
+     * @throws IOException ファイル読み込みエラーが発生した場合
      */
-    public List<String> readFileWithTryCatchFinally(String filePath) {
+    public static String readFirstLineWithTraditional(String fileName) throws IOException {
         BufferedReader reader = null;
-        List<String> lines = new ArrayList<>();
+        String firstLine = "";
         
         try {
-            reader = new BufferedReader(new FileReader(filePath));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
+            reader = new BufferedReader(new FileReader(fileName));
+            firstLine = reader.readLine();
+            if (firstLine == null) {
+                firstLine = "";
             }
-        } catch (FileNotFoundException e) {
-            System.err.println("ファイルが見つかりません: " + filePath);
-            System.err.println("エラー詳細: " + e.getMessage());
         } catch (IOException e) {
-            System.err.println("ファイル読み込み中にエラーが発生しました: " + filePath);
-            System.err.println("エラー詳細: " + e.getMessage());
+            System.err.println("ファイル読み込み中にエラーが発生しました: " + e.getMessage());
+            throw e; // 例外を再スロー
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                     System.out.println("リソースを正常にクローズしました");
                 } catch (IOException e) {
-                    System.err.println("リソースのクローズ中にエラーが発生しました");
-                    System.err.println("エラー詳細: " + e.getMessage());
+                    System.err.println("リソースのクローズ中にエラーが発生しました: " + e.getMessage());
                 }
             }
         }
         
-        return lines;
+        return firstLine;
     }
     
     /**
-     * try-with-resourcesを使用したファイル読み込み
+     * try-with-resources構文を使用してファイルを読み込みます。
+     * 
+     * @param fileName 読み込むファイルのパス
+     * @return ファイルの最初の行、ファイルが空の場合は空文字列
+     * @throws IOException ファイル読み込みエラーが発生した場合
      */
-    public List<String> readFileWithTryWithResources(String filePath) {
-        List<String> lines = new ArrayList<>();
+    public static String readFirstLineWithTryWithResources(String fileName) throws IOException {
+        String firstLine = "";
         
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            firstLine = reader.readLine();
+            if (firstLine == null) {
+                firstLine = "";
             }
-            System.out.println("ファイルを正常に読み込みました: " + filePath);
-        } catch (FileNotFoundException e) {
-            System.err.println("ファイルが見つかりません: " + filePath);
-            System.err.println("エラー詳細: " + e.getMessage());
         } catch (IOException e) {
-            System.err.println("ファイル読み込み中にエラーが発生しました: " + filePath);
-            System.err.println("エラー詳細: " + e.getMessage());
+            System.err.println("ファイル読み込み中にエラーが発生しました: " + e.getMessage());
+            throw e; // 例外を再スロー
         }
         
-        return lines;
+        return firstLine;
     }
     
     /**
-     * 複数のリソースを使用するtry-with-resources
+     * ファイルの内容を読み込み、各行を表示します。
+     * 
+     * @param fileName 読み込むファイルのパス
      */
-    public void copyFile(String sourcePath, String destinationPath) {
-        try (
-            BufferedReader reader = new BufferedReader(new FileReader(sourcePath));
-            java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(destinationPath))
-        ) {
+    public static void readAndDisplayFile(String fileName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                writer.write(line);
-                writer.newLine();
-            }
-            System.out.println("ファイルを正常にコピーしました: " + sourcePath + " -> " + destinationPath);
-        } catch (FileNotFoundException e) {
-            System.err.println("ファイルが見つかりません: " + sourcePath);
-            System.err.println("エラー詳細: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("ファイル操作中にエラーが発生しました");
-            System.err.println("エラー詳細: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * 例外の再スロー
-     */
-    public List<String> readFileWithRethrow(String filePath) throws IOException {
-        List<String> lines = new ArrayList<>();
-        
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-            System.out.println("ファイルを正常に読み込みました: " + filePath);
-        } catch (FileNotFoundException e) {
-            System.err.println("ファイルが見つかりません: " + filePath);
-            // 例外を再スロー
-            throw new FileNotFoundException("ファイルが存在しません: " + filePath);
-        } catch (IOException e) {
-            System.err.println("ファイル読み込み中にエラーが発生しました: " + filePath);
-            // 例外を再スロー（追加情報付き）
-            IOException newException = new IOException("ファイル読み込みエラー: " + filePath, e);
-            throw newException;
-        }
-        
-        return lines;
-    }
-    
-    /**
-     * 例外の抑制
-     */
-    public void demonstrateSuppressedException() {
-        Exception mainException = new Exception("メイン例外");
-        
-        try {
-            throw mainException;
-        } catch (Exception e) {
-            try {
-                // クリーンアップ処理中に例外が発生
-                throw new RuntimeException("クリーンアップ中の例外");
-            } catch (RuntimeException cleanupException) {
-                // クリーンアップ例外をメイン例外に抑制例外として追加
-                e.addSuppressed(cleanupException);
-            }
+            int lineNumber = 1;
             
-            // 抑制された例外の情報を表示
-            System.err.println("メイン例外: " + e.getMessage());
-            Throwable[] suppressed = e.getSuppressed();
-            for (Throwable t : suppressed) {
-                System.err.println("抑制された例外: " + t.getMessage());
+            System.out.println("ファイルの内容を表示します: " + fileName);
+            while ((line = reader.readLine()) != null) {
+                System.out.println(lineNumber + ": " + line);
+                lineNumber++;
             }
-        }
-    }
-    
-    /**
-     * 例外の連鎖
-     */
-    public void demonstrateExceptionChaining() {
-        try {
-            // 低レベルの例外
-            try {
-                int result = 10 / 0;
-            } catch (ArithmeticException e) {
-                // 低レベルの例外を原因として、より高レベルの例外をスロー
-                throw new IllegalStateException("計算処理中にエラーが発生しました", e);
-            }
-        } catch (IllegalStateException e) {
-            System.err.println("キャッチした例外: " + e.getMessage());
-            Throwable cause = e.getCause();
-            if (cause != null) {
-                System.err.println("原因となった例外: " + cause.getMessage());
-                System.err.println("原因となった例外のクラス: " + cause.getClass().getName());
-            }
-        }
-    }
-    
-    /**
-     * マルチキャッチ
-     */
-    public void demonstrateMultiCatch() {
-        try {
-            // ランダムに例外をスロー
-            int random = (int) (Math.random() * 3);
-            if (random == 0) {
-                throw new IllegalArgumentException("不正な引数");
-            } else if (random == 1) {
-                throw new NumberFormatException("数値フォーマットエラー");
+            System.out.println("ファイルの読み込みが完了しました");
+        } catch (IOException e) {
+            if (e instanceof java.io.FileNotFoundException) {
+                System.err.println("ファイルが見つかりません: " + fileName);
             } else {
-                throw new ArrayIndexOutOfBoundsException("配列インデックスエラー");
+                System.err.println("ファイル読み込み中にエラーが発生しました: " + e.getMessage());
             }
-        } catch (IllegalArgumentException | NumberFormatException e) {
-            // 複数の例外型を一度にキャッチ
-            System.err.println("引数または数値の例外: " + e.getMessage());
-        } catch (RuntimeException e) {
-            // その他のランタイム例外
-            System.err.println("その他のランタイム例外: " + e.getMessage());
         }
-    }
-    
-    /**
-     * テスト用のサンプルファイルを作成
-     */
-    private void createSampleFile(String filePath, List<String> content) {
-        try {
-            Path path = Paths.get(filePath);
-            Files.write(path, content);
-            System.out.println("サンプルファイルを作成しました: " + filePath);
-        } catch (IOException e) {
-            System.err.println("サンプルファイルの作成に失敗しました: " + filePath);
-            System.err.println("エラー詳細: " + e.getMessage());
-        }
-    }
-
-    public static void main(String[] args) {
-        BasicExceptionHandling demo = new BasicExceptionHandling();
-        
-        // サンプルファイルの作成
-        String sampleFilePath = "sample.txt";
-        List<String> sampleContent = List.of(
-            "これはサンプルファイルの1行目です。",
-            "これはサンプルファイルの2行目です。",
-            "これはサンプルファイルの3行目です。"
-        );
-        demo.createSampleFile(sampleFilePath, sampleContent);
-        
-        // try-catch-finallyの例
-        System.out.println("\n=== try-catch-finallyの例 ===");
-        List<String> lines1 = demo.readFileWithTryCatchFinally(sampleFilePath);
-        System.out.println("読み込んだ行数: " + lines1.size());
-        
-        // try-with-resourcesの例
-        System.out.println("\n=== try-with-resourcesの例 ===");
-        List<String> lines2 = demo.readFileWithTryWithResources(sampleFilePath);
-        System.out.println("読み込んだ行数: " + lines2.size());
-        
-        // 存在しないファイルの読み込み
-        System.out.println("\n=== 存在しないファイルの読み込み ===");
-        List<String> lines3 = demo.readFileWithTryWithResources("non_existent.txt");
-        System.out.println("読み込んだ行数: " + lines3.size());
-        
-        // ファイルのコピー
-        System.out.println("\n=== ファイルのコピー ===");
-        String destinationPath = "sample_copy.txt";
-        demo.copyFile(sampleFilePath, destinationPath);
-        
-        // 例外の再スロー
-        System.out.println("\n=== 例外の再スロー ===");
-        try {
-            List<String> lines4 = demo.readFileWithRethrow("non_existent.txt");
-        } catch (IOException e) {
-            System.err.println("メインメソッドでキャッチした例外: " + e.getMessage());
-        }
-        
-        // 例外の抑制
-        System.out.println("\n=== 例外の抑制 ===");
-        demo.demonstrateSuppressedException();
-        
-        // 例外の連鎖
-        System.out.println("\n=== 例外の連鎖 ===");
-        demo.demonstrateExceptionChaining();
-        
-        // マルチキャッチ
-        System.out.println("\n=== マルチキャッチ ===");
-        demo.demonstrateMultiCatch();
     }
 }
 ```
 
-## コア演習2: チェック例外と非チェック例外の使い分け
+### 解説
+この解答例では、ファイル操作における基本的な例外処理を実装しています。
+
+1. **従来のtry-catch-finally構文**
+   - `readFirstLineWithTraditional`メソッドでは、従来のtry-catch-finally構文を使用しています
+   - finallyブロックでリソースを確実にクローズし、クローズ時のエラーも適切に処理しています
+   - 発生した例外は上位層に再スローしています
+
+2. **try-with-resources構文**
+   - `readFirstLineWithTryWithResources`メソッドでは、Java 7以降で導入されたtry-with-resources構文を使用しています
+   - リソースは自動的にクローズされるため、明示的なクローズ処理が不要です
+   - コードがより簡潔で読みやすくなっています
+
+3. **例外の種類に応じた処理**
+   - `readAndDisplayFile`メソッドでは、`FileNotFoundException`と他のIOExceptionを区別して処理しています
+   - ユーザーに対して適切なエラーメッセージを表示しています
+
+この実装により、ファイル操作における例外を適切に処理し、リソースの確実なクローズを保証しています。
+
+## 演習2: チェック例外と非チェック例外の使い分け
 
 ### 解答例
 ```java
-package exception.design;
+package exceptions.advanced;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ExceptionDesignDemo {
+/**
+ * データベース関連の例外を表すチェック例外
+ */
+class DatabaseException extends Exception {
+    public DatabaseException(String message) {
+        super(message);
+    }
+    
+    public DatabaseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
 
-    /**
-     * ユーザー登録システムのデモ
-     */
-    public static class UserRegistrationSystem {
-        
-        // ユーザーリスト（データベースの代わり）
-        private List<User> users = new ArrayList<>();
-        
-        // メールアドレスの正規表現パターン
-        private static final Pattern EMAIL_PATTERN = 
-            Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-        
-        // パスワードの最小長
-        private static final int MIN_PASSWORD_LENGTH = 8;
-        
-        /**
-         * ユーザーを登録します。
-         * 
-         * @param username ユーザー名
-         * @param email メールアドレス
-         * @param password パスワード
-         * @return 登録されたユーザー
-         * @throws ValidationException 入力値が不正な場合
-         * @throws DuplicateUserException ユーザーが既に存在する場合
-         * @throws SystemException システムエラーが発生した場合
-         */
-        public User registerUser(String username, String email, String password) 
-                throws ValidationException, DuplicateUserException, SystemException {
-            
-            // 入力値の検証（チェック例外）
-            validateInput(username, email, password);
-            
-            // 重複チェック（チェック例外）
-            checkDuplicateUser(username, email);
-            
-            try {
-                // ユーザーの作成
-                User user = new User(username, email, password);
-                
-                // データベースへの保存をシミュレート
-                simulateDatabaseOperation();
-                
-                // ユーザーリストに追加
-                users.add(user);
-                
-                // 確認メールの送信をシミュレート
-                sendConfirmationEmail(user);
-                
-                return user;
-            } catch (RuntimeException e) {
-                // システムエラー（チェック例外）
-                throw new SystemException("ユーザー登録中にシステムエラーが発生しました", e);
-            }
-        }
-        
-        /**
-         * 入力値を検証します。
-         * 
-         * @param username ユーザー名
-         * @param email メールアドレス
-         * @param password パスワード
-         * @throws ValidationException 入力値が不正な場合
-         */
-        private void validateInput(String username, String email, String password) throws ValidationException {
-            List<String> errors = new ArrayList<>();
-            
-            // ユーザー名の検証
-            if (username == null || username.trim().isEmpty()) {
-                errors.add("ユーザー名は必須です");
-            }
-            
-            // メールアドレスの検証
-            if (email == null || email.trim().isEmpty()) {
-                errors.add("メールアドレスは必須です");
-            } else if (!EMAIL_PATTERN.matcher(email).matches()) {
-                errors.add("メールアドレスの形式が不正です");
-            }
-            
-            // パスワードの検証
-            if (password == null || password.trim().isEmpty()) {
-                errors.add("パスワードは必須です");
-            } else if (password.length() < MIN_PASSWORD_LENGTH) {
-                errors.add("パスワードは" + MIN_PASSWORD_LENGTH + "文字以上である必要があります");
-            }
-            
-            // エラーがある場合は例外をスロー
-            if (!errors.isEmpty()) {
-                throw new ValidationException("入力値の検証に失敗しました", errors);
-            }
-        }
-        
-        /**
-         * ユーザーの重複をチェックします。
-         * 
-         * @param username ユーザー名
-         * @param email メールアドレス
-         * @throws DuplicateUserException ユーザーが既に存在する場合
-         */
-        private void checkDuplicateUser(String username, String email) throws DuplicateUserException {
-            for (User user : users) {
-                if (user.getUsername().equals(username)) {
-                    throw new DuplicateUserException("ユーザー名 '" + username + "' は既に使用されています");
-                }
-                if (user.getEmail().equals(email)) {
-                    throw new DuplicateUserException("メールアドレス '" + email + "' は既に使用されています");
-                }
-            }
-        }
-        
-        /**
-         * データベース操作をシミュレートします。
-         */
-        private void simulateDatabaseOperation() {
-            // ランダムにデータベースエラーをシミュレート
-            if (Math.random() < 0.1) {
-                throw new DatabaseException("データベース接続エラー");
-            }
-        }
-        
-        /**
-         * 確認メールの送信をシミュレートします。
-         * 
-         * @param user ユーザー
-         */
-        private void sendConfirmationEmail(User user) {
-            // ランダムにメール送信エラーをシミュレート
-            if (Math.random() < 0.1) {
-                throw new EmailException("メール送信エラー: " + user.getEmail());
-            }
-            
-            System.out.println("確認メールを送信しました: " + user.getEmail());
-        }
-        
-        /**
-         * 登録済みのユーザーを取得します。
-         * 
-         * @return ユーザーリスト
-         */
-        public List<User> getUsers() {
-            return new ArrayList<>(users);
-        }
+/**
+ * ユーザーが見つからない場合のチェック例外
+ */
+class UserNotFoundException extends Exception {
+    public UserNotFoundException(String message) {
+        super(message);
     }
     
-    /**
-     * ユーザークラス
-     */
-    public static class User {
-        private String username;
-        private String email;
-        private String password;
-        
-        public User(String username, String email, String password) {
-            this.username = username;
-            this.email = email;
-            this.password = password;
-        }
-        
-        public String getUsername() { return username; }
-        public String getEmail() { return email; }
-        
-        @Override
-        public String toString() {
-            return "User{username='" + username + "', email='" + email + "'}";
-        }
+    public UserNotFoundException(String message, Throwable cause) {
+        super(message, cause);
     }
-    
-    /**
-     * 入力値検証例外（チェック例外）
-     */
-    public static class ValidationException extends Exception {
-        private List<String> errors;
-        
-        public ValidationException(String message, List<String> errors) {
-            super(message);
-            this.errors = errors;
-        }
-        
-        public List<String> getErrors() {
-            return errors;
-        }
-    }
-    
-    /**
-     * 重複ユーザー例外（チェック例外）
-     */
-    public static class DuplicateUserException extends Exception {
-        public DuplicateUserException(String message) {
-            super(message);
-        }
-    }
-    
-    /**
-     * システム例外（チェック例外）
-     */
-    public static class SystemException extends Exception {
-        public SystemException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-    
-    /**
-     * データベース例外（非チェック例外）
-     */
-    public static class DatabaseException extends RuntimeException {
-        public DatabaseException(String message) {
-            super(message);
-        }
-    }
-    
-    /**
-     * メール例外（非チェック例外）
-     */
-    public static class EmailException extends RuntimeException {
-        public EmailException(String message) {
-            super(message);
-        }
-    }
+}
 
+/**
+ * ユーザーデータが不正な場合の非チェック例外
+ */
+class InvalidUserDataException extends RuntimeException {
+    public InvalidUserDataException(String message) {
+        super(message);
+    }
+    
+    public InvalidUserDataException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+/**
+ * ユーザークラス
+ */
+class User {
+    private String id;
+    private String name;
+    private String email;
+    private int age;
+    
+    public User(String id, String name, String email, int age) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+    
+    public String getId() {
+        return id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public int getAge() {
+        return age;
+    }
+    
+    @Override
+    public String toString() {
+        return "User{id='" + id + "', name='" + name + "', email='" + email + "', age=" + age + "}";
+    }
+}
+
+/**
+ * ユーザー登録システムを表すクラス
+ */
+public class UserRegistrationSystem {
+    
+    private Map<String, User> users = new HashMap<>();
+    private boolean databaseConnected = true;  // データベース接続状態（デモ用）
+    
+    /**
+     * ユーザーを登録します。
+     * 
+     * @param user 登録するユーザー
+     * @throws InvalidUserDataException ユーザーデータが不正な場合
+     * @throws DatabaseException データベースエラーが発生した場合
+     */
+    public void registerUser(User user) throws DatabaseException {
+        // データベース接続チェック
+        if (!databaseConnected) {
+            throw new DatabaseException("データベースに接続できません");
+        }
+        
+        // ユーザーデータのバリデーション
+        validateUserData(user);
+        
+        // ユーザーの登録
+        users.put(user.getId(), user);
+        System.out.println("ユーザーを登録しました: " + user);
+    }
+    
+    /**
+     * ユーザーデータを検証します。
+     * 
+     * @param user 検証するユーザー
+     * @throws InvalidUserDataException ユーザーデータが不正な場合
+     */
+    private void validateUserData(User user) {
+        if (user == null) {
+            throw new InvalidUserDataException("ユーザーデータがnullです");
+        }
+        
+        if (user.getId() == null || user.getId().trim().isEmpty()) {
+            throw new InvalidUserDataException("ユーザーIDは必須です");
+        }
+        
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            throw new InvalidUserDataException("ユーザー名は必須です");
+        }
+        
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            throw new InvalidUserDataException("メールアドレスは必須です");
+        }
+        
+        if (user.getAge() < 0) {
+            throw new InvalidUserDataException("年齢は0以上である必要があります");
+        }
+    }
+    
+    /**
+     * ユーザーIDでユーザーを検索します。
+     * 
+     * @param userId 検索するユーザーID
+     * @return 見つかったユーザー
+     * @throws UserNotFoundException ユーザーが見つからない場合
+     * @throws DatabaseException データベースエラーが発生した場合
+     */
+    public User findUserById(String userId) throws UserNotFoundException, DatabaseException {
+        // データベース接続チェック
+        if (!databaseConnected) {
+            throw new DatabaseException("データベースに接続できません");
+        }
+        
+        // ユーザーの検索
+        User user = users.get(userId);
+        if (user == null) {
+            throw new UserNotFoundException("ユーザーID '" + userId + "' のユーザーが見つかりません");
+        }
+        
+        return user;
+    }
+    
+    /**
+     * データベース接続状態を設定します（デモ用）。
+     * 
+     * @param connected 接続状態
+     */
+    public void setDatabaseConnected(boolean connected) {
+        this.databaseConnected = connected;
+    }
+    
     public static void main(String[] args) {
+        // ユーザー登録システムの作成
         UserRegistrationSystem system = new UserRegistrationSystem();
         
-        // 正常なユーザー登録
+        // ユーザー登録のテスト
+        System.out.println("===== ユーザー登録のテスト =====");
+        
+        // 正常なユーザーの登録
         try {
-            User user1 = system.registerUser("user1", "user1@example.com", "password123");
-            System.out.println("ユーザーを登録しました: " + user1);
-        } catch (ValidationException e) {
-            System.err.println("入力値の検証エラー: " + e.getMessage());
-            System.err.println("エラー詳細:");
-            for (String error : e.getErrors()) {
-                System.err.println("- " + error);
-            }
-        } catch (DuplicateUserException e) {
-            System.err.println("重複エラー: " + e.getMessage());
-        } catch (SystemException e) {
-            System.err.println("システムエラー: " + e.getMessage());
-            if (e.getCause() != null) {
-                System.err.println("原因: " + e.getCause().getMessage());
-            }
+            User user1 = new User("user1", "山田太郎", "yamada@example.com", 30);
+            system.registerUser(user1);
+            System.out.println("ユーザーが正常に登録されました: " + user1);
+        } catch (InvalidUserDataException e) {
+            System.out.println("不正なユーザーデータ: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
         }
         
-        // 不正な入力値でのユーザー登録
+        // 不正なユーザーの登録（nullユーザー）
         try {
-            User user2 = system.registerUser("", "invalid-email", "short");
-            System.out.println("ユーザーを登録しました: " + user2);
-        } catch (ValidationException e) {
-            System.err.println("入力値の検証エラー: " + e.getMessage());
-            System.err.println("エラー詳細:");
-            for (String error : e.getErrors()) {
-                System.err.println("- " + error);
-            }
-        } catch (DuplicateUserException e) {
-            System.err.println("重複エラー: " + e.getMessage());
-        } catch (SystemException e) {
-            System.err.println("システムエラー: " + e.getMessage());
-            if (e.getCause() != null) {
-                System.err.println("原因: " + e.getCause().getMessage());
-            }
+            system.registerUser(null);
+            System.out.println("ユーザーが正常に登録されました");
+        } catch (InvalidUserDataException e) {
+            System.out.println("不正なユーザーデータ: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
         }
         
-        // 重複ユーザーでのユーザー登録
+        // 不正なユーザーの登録（IDなし）
         try {
-            // 最初に正常なユーザーを登録
-            User user3 = system.registerUser("user3", "user3@example.com", "password123");
-            System.out.println("ユーザーを登録しました: " + user3);
-            
-            // 同じユーザー名で再登録
-            User user4 = system.registerUser("user3", "another@example.com", "password456");
-            System.out.println("ユーザーを登録しました: " + user4);
-        } catch (ValidationException e) {
-            System.err.println("入力値の検証エラー: " + e.getMessage());
-            System.err.println("エラー詳細:");
-            for (String error : e.getErrors()) {
-                System.err.println("- " + error);
-            }
-        } catch (DuplicateUserException e) {
-            System.err.println("重複エラー: " + e.getMessage());
-        } catch (SystemException e) {
-            System.err.println("システムエラー: " + e.getMessage());
-            if (e.getCause() != null) {
-                System.err.println("原因: " + e.getCause().getMessage());
-            }
+            User user2 = new User("", "鈴木花子", "suzuki@example.com", 25);
+            system.registerUser(user2);
+            System.out.println("ユーザーが正常に登録されました: " + user2);
+        } catch (InvalidUserDataException e) {
+            System.out.println("不正なユーザーデータ: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
         }
         
-        // 登録済みのユーザーを表示
-        System.out.println("\n登録済みのユーザー:");
-        for (User user : system.getUsers()) {
-            System.out.println("- " + user);
+        // 不正なユーザーの登録（負の年齢）
+        try {
+            User user3 = new User("user3", "佐藤次郎", "sato@example.com", -5);
+            system.registerUser(user3);
+            System.out.println("ユーザーが正常に登録されました: " + user3);
+        } catch (InvalidUserDataException e) {
+            System.out.println("不正なユーザーデータ: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
+        }
+        
+        // ユーザー検索のテスト
+        System.out.println("\n===== ユーザー検索のテスト =====");
+        
+        // 存在するユーザーの検索
+        try {
+            User foundUser = system.findUserById("user1");
+            System.out.println("ユーザーが見つかりました: " + foundUser);
+        } catch (UserNotFoundException e) {
+            System.out.println("ユーザーが見つかりません: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
+        }
+        
+        // 存在しないユーザーの検索
+        try {
+            User foundUser = system.findUserById("non_existing_user");
+            System.out.println("ユーザーが見つかりました: " + foundUser);
+        } catch (UserNotFoundException e) {
+            System.out.println("ユーザーが見つかりません: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
+        }
+        
+        // データベース接続エラーのテスト
+        System.out.println("\n===== データベース接続エラーのテスト =====");
+        
+        // データベース接続を切断
+        system.setDatabaseConnected(false);
+        
+        // データベース接続エラー時のユーザー登録
+        try {
+            User newUser = new User("user4", "伊藤健太", "ito@example.com", 40);
+            system.registerUser(newUser);
+            System.out.println("ユーザーが正常に登録されました: " + newUser);
+        } catch (InvalidUserDataException e) {
+            System.out.println("不正なユーザーデータ: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
+        }
+        
+        // データベース接続エラー時のユーザー検索
+        try {
+            User foundUser = system.findUserById("user1");
+            System.out.println("ユーザーが見つかりました: " + foundUser);
+        } catch (UserNotFoundException e) {
+            System.out.println("ユーザーが見つかりません: " + e.getMessage());
+        } catch (DatabaseException e) {
+            System.out.println("データベースエラー: " + e.getMessage());
         }
     }
 }
 ```
 
-## コア演習3: 例外の変換とラッピング
+### 解説
+この解答例では、チェック例外と非チェック例外の適切な使い分けを実装しています。
+
+1. **チェック例外（UserNotFoundException, DatabaseException）**
+   - `UserNotFoundException`はユーザーが見つからない場合に使用するチェック例外です
+   - `DatabaseException`はデータベース接続エラーを表すチェック例外です
+   - 呼び出し元に明示的な処理を強制するため、チェック例外として設計しています
+   - 回復可能なエラー状態を表現しています
+
+2. **非チェック例外（InvalidUserDataException）**
+   - ユーザーデータが不正な場合に使用する非チェック例外です
+   - プログラミングエラーを表現するため、非チェック例外として設計しています
+   - 呼び出し元は通常このエラーを回避するべきです
+
+3. **例外の連鎖**
+   - 各例外クラスには、原因となる例外を保持するコンストラクタを実装しています
+   - これにより、デバッグ時に役立つ情報を提供しています
+
+4. **例外処理の責任分担**
+   - データ検証は`validateUserData`メソッドに集約されています
+   - 各メソッドは自身の責任範囲の例外のみをスローしています
+
+この実装により、異なる種類のエラー状況に対して適切な例外型を使い分け、呼び出し元に必要な情報を提供しています。
+
+## 演習3: 例外の変換とラッピング
 
 ### 解答例
 ```java
-package exception.wrapper;
+package exceptions.advanced;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+
+/**
+ * ファイル操作に関連する例外を表すクラス
+ */
+class FileOperationException extends Exception {
+    public FileOperationException(String message) {
+        super(message);
+    }
+    
+    public FileOperationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
 
 /**
  * ファイル操作ユーティリティクラス
@@ -600,1242 +458,545 @@ import java.util.Properties;
 public class FileUtils {
     
     /**
-     * ファイルの内容を文字列として読み込みます。
+     * ファイルの内容を読み込み、文字列のリストとして返します。
      * 
-     * @param filePath ファイルパス
-     * @return ファイルの内容
-     * @throws FileOperationException ファイル操作中にエラーが発生した場合
+     * @param fileName 読み込むファイルのパス
+     * @return ファイルの各行を含む文字列のリスト
+     * @throws FileOperationException ファイル操作エラーが発生した場合
      */
-    public static String readFileAsString(String filePath) throws FileOperationException {
-        try {
-            Path path = Paths.get(filePath);
-            return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            // IOExceptionをFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルの読み込みに失敗しました: " + filePath, e);
-        }
-    }
-    
-    /**
-     * ファイルの内容を行のリストとして読み込みます。
-     * 
-     * @param filePath ファイルパス
-     * @return 行のリスト
-     * @throws FileOperationException ファイル操作中にエラーが発生した場合
-     */
-    public static List<String> readFileAsLines(String filePath) throws FileOperationException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            List<String> lines = new ArrayList<>();
+    public static List<String> readLines(String fileName) throws FileOperationException {
+        List<String> lines = new ArrayList<>();
+        
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
             }
             return lines;
-        } catch (FileNotFoundException e) {
-            // FileNotFoundExceptionを特定のFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルが見つかりません: " + filePath, e, FileOperationException.ErrorType.FILE_NOT_FOUND);
         } catch (IOException e) {
-            // IOExceptionを一般的なFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルの読み込み中にエラーが発生しました: " + filePath, e);
+            // IOExceptionをFileOperationExceptionに変換
+            if (e instanceof java.io.FileNotFoundException) {
+                throw new FileOperationException("ファイルが見つかりません: " + fileName, e);
+            } else {
+                throw new FileOperationException("ファイル読み込み中にエラーが発生しました: " + fileName, e);
+            }
         }
     }
     
     /**
-     * プロパティファイルを読み込みます。
+     * 文字列のリストをファイルに書き込みます。
      * 
-     * @param filePath プロパティファイルのパス
-     * @return プロパティオブジェクト
-     * @throws ConfigurationException 設定ファイルの読み込み中にエラーが発生した場合
+     * @param lines 書き込む文字列のリスト
+     * @param fileName 書き込むファイルのパス
+     * @throws FileOperationException ファイル操作エラーが発生した場合
      */
-    public static Properties loadProperties(String filePath) throws ConfigurationException {
-        Properties properties = new Properties();
-        
-        try (InputStream input = new FileInputStream(filePath)) {
-            properties.load(input);
-            return properties;
+    public static void writeLines(List<String> lines, String fileName) throws FileOperationException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            for (String line : lines) {
+                writer.write(line);
+                writer.newLine();
+            }
         } catch (IOException e) {
-            // IOExceptionをConfigurationExceptionにラップ
-            throw new ConfigurationException("プロパティファイルの読み込みに失敗しました: " + filePath, e);
-        }
-    }
-    
-    /**
-     * ファイルの内容を文字列として書き込みます。
-     * 
-     * @param filePath ファイルパス
-     * @param content 書き込む内容
-     * @throws FileOperationException ファイル操作中にエラーが発生した場合
-     */
-    public static void writeStringToFile(String filePath, String content) throws FileOperationException {
-        try {
-            Path path = Paths.get(filePath);
-            Files.write(path, content.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            // IOExceptionをFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルの書き込みに失敗しました: " + filePath, e);
-        }
-    }
-    
-    /**
-     * ファイルの内容を行のリストとして書き込みます。
-     * 
-     * @param filePath ファイルパス
-     * @param lines 書き込む行のリスト
-     * @throws FileOperationException ファイル操作中にエラーが発生した場合
-     */
-    public static void writeLinesToFile(String filePath, List<String> lines) throws FileOperationException {
-        try {
-            Path path = Paths.get(filePath);
-            Files.write(path, lines, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            // IOExceptionをFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルの書き込みに失敗しました: " + filePath, e);
-        }
-    }
-    
-    /**
-     * ディレクトリを作成します。
-     * 
-     * @param directoryPath ディレクトリパス
-     * @throws FileOperationException ディレクトリ作成中にエラーが発生した場合
-     */
-    public static void createDirectory(String directoryPath) throws FileOperationException {
-        try {
-            Path path = Paths.get(directoryPath);
-            Files.createDirectories(path);
-        } catch (IOException e) {
-            // IOExceptionをFileOperationExceptionにラップ
-            throw new FileOperationException("ディレクトリの作成に失敗しました: " + directoryPath, e);
-        }
-    }
-    
-    /**
-     * ファイルを削除します。
-     * 
-     * @param filePath ファイルパス
-     * @throws FileOperationException ファイル削除中にエラーが発生した場合
-     */
-    public static void deleteFile(String filePath) throws FileOperationException {
-        try {
-            Path path = Paths.get(filePath);
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            // IOExceptionをFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルの削除に失敗しました: " + filePath, e);
+            // IOExceptionをFileOperationExceptionに変換
+            throw new FileOperationException("ファイル書き込み中にエラーが発生しました: " + fileName, e);
         }
     }
     
     /**
      * ファイルをコピーします。
      * 
-     * @param sourcePath コピー元ファイルパス
-     * @param destinationPath コピー先ファイルパス
-     * @throws FileOperationException ファイルコピー中にエラーが発生した場合
+     * @param sourceFileName コピー元ファイルのパス
+     * @param targetFileName コピー先ファイルのパス
+     * @throws FileOperationException ファイル操作エラーが発生した場合
      */
-    public static void copyFile(String sourcePath, String destinationPath) throws FileOperationException {
+    public static void copyFile(String sourceFileName, String targetFileName) throws FileOperationException {
         try {
-            Path source = Paths.get(sourcePath);
-            Path destination = Paths.get(destinationPath);
-            Files.copy(source, destination, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            // IOExceptionをFileOperationExceptionにラップ
-            throw new FileOperationException("ファイルのコピーに失敗しました: " + sourcePath + " -> " + destinationPath, e);
+            // ファイルの内容を読み込み
+            List<String> lines = readLines(sourceFileName);
+            
+            // ファイルに内容を書き込み
+            writeLines(lines, targetFileName);
+        } catch (FileOperationException e) {
+            // FileOperationExceptionを適切なメッセージを追加して再スロー
+            throw new FileOperationException("ファイルコピー中にエラーが発生しました: " + sourceFileName + " -> " + targetFileName, e);
         }
     }
     
     /**
-     * ファイルが存在するかチェックします。
+     * ファイルが存在するかどうかを確認します。
      * 
-     * @param filePath ファイルパス
-     * @return ファイルが存在する場合はtrue
+     * @param fileName 確認するファイルのパス
+     * @return ファイルが存在する場合はtrue、存在しない場合はfalse
      */
-    public static boolean fileExists(String filePath) {
-        File file = new File(filePath);
+    public static boolean fileExists(String fileName) {
+        File file = new File(fileName);
         return file.exists() && file.isFile();
     }
     
-    /**
-     * ディレクトリが存在するかチェックします。
-     * 
-     * @param directoryPath ディレクトリパス
-     * @return ディレクトリが存在する場合はtrue
-     */
-    public static boolean directoryExists(String directoryPath) {
-        File directory = new File(directoryPath);
-        return directory.exists() && directory.isDirectory();
-    }
-    
-    /**
-     * ファイル操作例外クラス
-     */
-    public static class FileOperationException extends Exception {
-        
-        /**
-         * エラータイプ
-         */
-        public enum ErrorType {
-            FILE_NOT_FOUND,
-            PERMISSION_DENIED,
-            IO_ERROR,
-            UNKNOWN
-        }
-        
-        private ErrorType errorType;
-        
-        public FileOperationException(String message) {
-            super(message);
-            this.errorType = ErrorType.UNKNOWN;
-        }
-        
-        public FileOperationException(String message, Throwable cause) {
-            super(message, cause);
-            this.errorType = getErrorTypeFromCause(cause);
-        }
-        
-        public FileOperationException(String message, Throwable cause, ErrorType errorType) {
-            super(message, cause);
-            this.errorType = errorType;
-        }
-        
-        public ErrorType getErrorType() {
-            return errorType;
-        }
-        
-        /**
-         * 原因となった例外からエラータイプを推測します。
-         */
-        private ErrorType getErrorTypeFromCause(Throwable cause) {
-            if (cause instanceof FileNotFoundException) {
-                return ErrorType.FILE_NOT_FOUND;
-            } else if (cause instanceof java.nio.file.AccessDeniedException) {
-                return ErrorType.PERMISSION_DENIED;
-            } else if (cause instanceof IOException) {
-                return ErrorType.IO_ERROR;
-            } else {
-                return ErrorType.UNKNOWN;
-            }
-        }
-    }
-    
-    /**
-     * 設定ファイル例外クラス
-     */
-    public static class ConfigurationException extends Exception {
-        
-        public ConfigurationException(String message) {
-            super(message);
-        }
-        
-        public ConfigurationException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-    
     public static void main(String[] args) {
-        // サンプルファイルの作成
-        String sampleFilePath = "sample.txt";
-        List<String> sampleContent = List.of(
-            "これはサンプルファイルの1行目です。",
-            "これはサンプルファイルの2行目です。",
-            "これはサンプルファイルの3行目です。"
-        );
+        // テスト用のファイル名
+        String sourceFileName = "source.txt";
+        String targetFileName = "target.txt";
+        String nonExistingFileName = "non_existing_file.txt";
         
+        // テスト用のデータ
+        List<String> testData = new ArrayList<>();
+        testData.add("これはテストデータの1行目です。");
+        testData.add("これはテストデータの2行目です。");
+        testData.add("これはテストデータの3行目です。");
+        
+        // ファイル書き込みのテスト
+        System.out.println("===== ファイル書き込みのテスト =====");
         try {
-            // ファイルの書き込み
-            System.out.println("=== ファイルの書き込み ===");
-            writeLinesToFile(sampleFilePath, sampleContent);
-            System.out.println("ファイルを書き込みました: " + sampleFilePath);
-            
-            // ファイルの読み込み（文字列として）
-            System.out.println("\n=== ファイルの読み込み（文字列として） ===");
-            String content = readFileAsString(sampleFilePath);
-            System.out.println("ファイルの内容:\n" + content);
-            
-            // ファイルの読み込み（行のリストとして）
-            System.out.println("\n=== ファイルの読み込み（行のリストとして） ===");
-            List<String> lines = readFileAsLines(sampleFilePath);
-            System.out.println("ファイルの行数: " + lines.size());
-            for (int i = 0; i < lines.size(); i++) {
-                System.out.println((i + 1) + ": " + lines.get(i));
-            }
-            
-            // 存在しないファイルの読み込み
-            System.out.println("\n=== 存在しないファイルの読み込み ===");
-            try {
-                readFileAsLines("non_existent.txt");
-            } catch (FileOperationException e) {
-                System.err.println("エラー: " + e.getMessage());
-                System.err.println("エラータイプ: " + e.getErrorType());
-                if (e.getCause() != null) {
-                    System.err.println("原因: " + e.getCause().getMessage());
-                }
-            }
-            
-            // ディレクトリの作成
-            System.out.println("\n=== ディレクトリの作成 ===");
-            String directoryPath = "sample_dir";
-            createDirectory(directoryPath);
-            System.out.println("ディレクトリを作成しました: " + directoryPath);
-            
-            // ファイルのコピー
-            System.out.println("\n=== ファイルのコピー ===");
-            String destinationPath = directoryPath + "/sample_copy.txt";
-            copyFile(sampleFilePath, destinationPath);
-            System.out.println("ファイルをコピーしました: " + sampleFilePath + " -> " + destinationPath);
-            
-            // コピーされたファイルの内容を確認
-            List<String> copiedLines = readFileAsLines(destinationPath);
-            System.out.println("コピーされたファイルの行数: " + copiedLines.size());
-            
-            // プロパティファイルの作成と読み込み
-            System.out.println("\n=== プロパティファイルの作成と読み込み ===");
-            String propertiesFilePath = "config.properties";
-            List<String> propertiesContent = List.of(
-                "# サンプル設定ファイル",
-                "app.name=サンプルアプリケーション",
-                "app.version=1.0.0",
-                "app.debug=true"
-            );
-            writeLinesToFile(propertiesFilePath, propertiesContent);
-            
-            try {
-                Properties properties = loadProperties(propertiesFilePath);
-                System.out.println("読み込んだプロパティ:");
-                System.out.println("- app.name: " + properties.getProperty("app.name"));
-                System.out.println("- app.version: " + properties.getProperty("app.version"));
-                System.out.println("- app.debug: " + properties.getProperty("app.debug"));
-            } catch (ConfigurationException e) {
-                System.err.println("設定ファイルの読み込みエラー: " + e.getMessage());
-                if (e.getCause() != null) {
-                    System.err.println("原因: " + e.getCause().getMessage());
-                }
-            }
-            
-            // ファイルの削除
-            System.out.println("\n=== ファイルの削除 ===");
-            deleteFile(sampleFilePath);
-            System.out.println("ファイルを削除しました: " + sampleFilePath);
-            
-            deleteFile(destinationPath);
-            System.out.println("ファイルを削除しました: " + destinationPath);
-            
-            deleteFile(propertiesFilePath);
-            System.out.println("ファイルを削除しました: " + propertiesFilePath);
-            
-            // ディレクトリの削除
-            java.io.File dir = new java.io.File(directoryPath);
-            dir.delete();
-            System.out.println("ディレクトリを削除しました: " + directoryPath);
-            
+            FileUtils.writeLines(testData, sourceFileName);
+            System.out.println("ファイルへの書き込みが成功しました: " + sourceFileName);
         } catch (FileOperationException e) {
-            System.err.println("ファイル操作エラー: " + e.getMessage());
-            System.err.println("エラータイプ: " + e.getErrorType());
-            if (e.getCause() != null) {
-                System.err.println("原因: " + e.getCause().getMessage());
+            System.out.println("ファイル操作エラー: " + e.getMessage());
+            System.out.println("原因: " + e.getCause());
+        }
+        
+        // ファイル読み込みのテスト（存在するファイル）
+        System.out.println("\n===== ファイル読み込みのテスト（存在するファイル） =====");
+        try {
+            List<String> lines = FileUtils.readLines(sourceFileName);
+            System.out.println("ファイルからの読み込みが成功しました: " + sourceFileName);
+            System.out.println("読み込んだ行数: " + lines.size());
+            for (String line : lines) {
+                System.out.println(line);
             }
+        } catch (FileOperationException e) {
+            System.out.println("ファイル操作エラー: " + e.getMessage());
+            System.out.println("原因: " + e.getCause());
+        }
+        
+        // ファイル読み込みのテスト（存在しないファイル）
+        System.out.println("\n===== ファイル読み込みのテスト（存在しないファイル） =====");
+        try {
+            List<String> lines = FileUtils.readLines(nonExistingFileName);
+            System.out.println("ファイルからの読み込みが成功しました: " + nonExistingFileName);
+            System.out.println("読み込んだ行数: " + lines.size());
+        } catch (FileOperationException e) {
+            System.out.println("ファイル操作エラー: " + e.getMessage());
+            System.out.println("原因: " + e.getCause());
+        }
+        
+        // ファイルコピーのテスト
+        System.out.println("\n===== ファイルコピーのテスト =====");
+        try {
+            FileUtils.copyFile(sourceFileName, targetFileName);
+            System.out.println("ファイルのコピーが成功しました: " + sourceFileName + " -> " + targetFileName);
+            
+            if (FileUtils.fileExists(targetFileName)) {
+                List<String> lines = FileUtils.readLines(targetFileName);
+                System.out.println("コピー先ファイルの内容:");
+                for (String line : lines) {
+                    System.out.println(line);
+                }
+            }
+        } catch (FileOperationException e) {
+            System.out.println("ファイル操作エラー: " + e.getMessage());
+            System.out.println("原因: " + e.getCause());
+        }
+        
+        // 存在しないファイルのコピーのテスト
+        System.out.println("\n===== 存在しないファイルのコピーのテスト =====");
+        try {
+            FileUtils.copyFile(nonExistingFileName, targetFileName);
+            System.out.println("ファイルのコピーが成功しました: " + nonExistingFileName + " -> " + targetFileName);
+        } catch (FileOperationException e) {
+            System.out.println("ファイル操作エラー: " + e.getMessage());
+            System.out.println("原因: " + e.getCause());
         }
     }
 }
 ```
 
-## 発展演習1: 例外フィルタリング
+### 解説
+この解答例では、例外の変換とラッピングを実装しています。
+
+1. **例外クラスの設計**
+   - `FileOperationException`クラスを定義し、ファイル操作に関連する例外を表現しています
+   - メッセージのみを受け取るコンストラクタと、メッセージと原因例外を受け取るコンストラクタを実装しています
+
+2. **例外の変換**
+   - 低レベルの例外（`IOException`）を、より意味のある高レベルの例外（`FileOperationException`）に変換しています
+   - 変換時に元の例外を原因（cause）として保持することで、デバッグ情報を失わないようにしています
+   - `FileNotFoundException`と他の`IOException`を区別して、より具体的なエラーメッセージを提供しています
+
+3. **例外メッセージの強化**
+   - 変換後の例外には、より具体的なエラーメッセージを設定しています
+   - ファイルパスなどのコンテキスト情報を含めることで、問題の特定を容易にしています
+
+4. **例外の再スロー**
+   - `copyFile`メソッドでは、キャッチした例外を適切に処理した後、より具体的なメッセージを追加して再スローしています
+   - これにより、呼び出し元に対してより詳細なエラー情報を提供しています
+
+この実装により、低レベルの例外を適切に変換・ラッピングし、呼び出し元に対してより意味のある例外情報を提供しています。また、例外の連鎖を使用することで、元の例外情報も保持しています。
+
+## 発展演習1: 例外フィルタリング（難易度：発展）
 
 ### 解答例
 ```java
-package exception.filter;
+package exceptions.advanced;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 
+/**
+ * 例外フィルタリングを学ぶためのデモクラス
+ */
 public class ExceptionFilteringDemo {
-
-    /**
-     * 例外フィルターインターフェース
-     */
-    @FunctionalInterface
-    interface ExceptionFilter<E extends Exception> {
-        boolean shouldHandle(E exception);
-    }
     
     /**
-     * 例外ハンドラーインターフェース
-     */
-    @FunctionalInterface
-    interface ExceptionHandler<E extends Exception> {
-        void handle(E exception) throws Exception;
-    }
-    
-    /**
-     * 例外処理ユーティリティクラス
-     */
-    static class ExceptionUtils {
-        
-        /**
-         * 特定の例外のみをキャッチして処理します。
-         * 
-         * @param <E> 例外の型
-         * @param exceptionType キャッチする例外の型
-         * @param handler 例外ハンドラー
-         * @return 例外ハンドラーラッパー
-         */
-        public static <E extends Exception> ExceptionHandler<Exception> handleOnly(
-                Class<E> exceptionType, ExceptionHandler<E> handler) {
-            
-            return exception -> {
-                if (exceptionType.isInstance(exception)) {
-                    handler.handle(exceptionType.cast(exception));
-                } else {
-                    throw exception;
-                }
-            };
-        }
-        
-        /**
-         * 条件に一致する例外のみをキャッチして処理します。
-         * 
-         * @param <E> 例外の型
-         * @param exceptionType キャッチする例外の型
-         * @param filter 例外フィルター
-         * @param handler 例外ハンドラー
-         * @return 例外ハンドラーラッパー
-         */
-        public static <E extends Exception> ExceptionHandler<Exception> handleIf(
-                Class<E> exceptionType, ExceptionFilter<E> filter, ExceptionHandler<E> handler) {
-            
-            return exception -> {
-                if (exceptionType.isInstance(exception)) {
-                    E typedException = exceptionType.cast(exception);
-                    if (filter.shouldHandle(typedException)) {
-                        handler.handle(typedException);
-                    } else {
-                        throw exception;
-                    }
-                } else {
-                    throw exception;
-                }
-            };
-        }
-        
-        /**
-         * 複数の例外ハンドラーを連鎖させます。
-         * 
-         * @param handlers 例外ハンドラーのリスト
-         * @return 連鎖された例外ハンドラー
-         */
-        @SafeVarargs
-        public static ExceptionHandler<Exception> chain(ExceptionHandler<Exception>... handlers) {
-            return exception -> {
-                Exception currentException = exception;
-                
-                for (ExceptionHandler<Exception> handler : handlers) {
-                    try {
-                        handler.handle(currentException);
-                        return; // 例外が処理された
-                    } catch (Exception e) {
-                        currentException = e; // 次のハンドラーに渡す
-                    }
-                }
-                
-                throw currentException; // すべてのハンドラーが例外を処理できなかった
-            };
-        }
-        
-        /**
-         * 例外を変換します。
-         * 
-         * @param <E> 元の例外の型
-         * @param <T> 変換後の例外の型
-         * @param exceptionType 元の例外の型
-         * @param mapper 例外マッパー
-         * @return 例外ハンドラー
-         */
-        public static <E extends Exception, T extends Exception> ExceptionHandler<Exception> mapException(
-                Class<E> exceptionType, ExceptionMapper<E, T> mapper) {
-            
-            return exception -> {
-                if (exceptionType.isInstance(exception)) {
-                    throw mapper.map(exceptionType.cast(exception));
-                } else {
-                    throw exception;
-                }
-            };
-        }
-    }
-    
-    /**
-     * 例外マッパーインターフェース
-     */
-    @FunctionalInterface
-    interface ExceptionMapper<E extends Exception, T extends Exception> {
-        T map(E exception) throws T;
-    }
-    
-    /**
-     * ファイル操作例外クラス
-     */
-    static class FileOperationException extends Exception {
-        
-        public enum ErrorType {
-            FILE_NOT_FOUND,
-            PERMISSION_DENIED,
-            IO_ERROR,
-            UNKNOWN
-        }
-        
-        private ErrorType errorType;
-        
-        public FileOperationException(String message, ErrorType errorType) {
-            super(message);
-            this.errorType = errorType;
-        }
-        
-        public FileOperationException(String message, Throwable cause, ErrorType errorType) {
-            super(message, cause);
-            this.errorType = errorType;
-        }
-        
-        public ErrorType getErrorType() {
-            return errorType;
-        }
-    }
-    
-    /**
-     * ファイル操作を実行します。
+     * 特定の条件に一致する例外だけを処理します。
      * 
-     * @param filePath ファイルパス
-     * @throws IOException ファイル操作中にエラーが発生した場合
+     * @param exceptionType 処理する例外のタイプ（"io", "sql", "all"のいずれか）
+     * @throws Exception 処理されなかった例外
      */
-    public static void performFileOperation(String filePath) throws IOException {
-        double random = Math.random();
-        
-        if (random < 0.25) {
-            throw new FileNotFoundException("ファイルが見つかりません: " + filePath);
-        } else if (random < 0.5) {
-            throw new AccessDeniedException(filePath, null, "アクセスが拒否されました");
-        } else if (random < 0.75) {
-            throw new IOException("ファイル操作中にエラーが発生しました: " + filePath);
-        } else {
-            System.out.println("ファイル操作が成功しました: " + filePath);
-        }
-    }
-    
-    /**
-     * 例外フィルタリングを使用してファイル操作を実行します。
-     * 
-     * @param filePath ファイルパス
-     */
-    public static void executeWithExceptionFiltering(String filePath) {
+    public static void processExceptionsWithFiltering(String exceptionType) throws Exception {
         try {
-            performFileOperation(filePath);
+            // ランダムに例外をスロー
+            throwRandomException();
         } catch (Exception e) {
-            try {
-                // 例外ハンドラーチェーンを作成
-                ExceptionHandler<Exception> handlerChain = ExceptionUtils.chain(
-                    // FileNotFoundExceptionのみを処理
-                    ExceptionUtils.handleOnly(FileNotFoundException.class, ex -> {
-                        System.err.println("ファイルが見つかりません: " + ex.getMessage());
-                        // 代替ファイルを使用するなどの回復処理
-                    }),
-                    
-                    // AccessDeniedExceptionのみを処理
-                    ExceptionUtils.handleOnly(AccessDeniedException.class, ex -> {
-                        System.err.println("アクセスが拒否されました: " + ex.getMessage());
-                        // 権限の要求や別の方法でのアクセスを試みるなどの回復処理
-                    }),
-                    
-                    // 特定の条件を満たすIOExceptionのみを処理
-                    ExceptionUtils.handleIf(IOException.class, 
-                        ex -> ex.getMessage().contains("操作中"), // フィルター条件
-                        ex -> {
-                            System.err.println("IO操作中のエラー: " + ex.getMessage());
-                            // 再試行などの回復処理
-                        }
-                    ),
-                    
-                    // その他のIOExceptionを変換
-                    ExceptionUtils.mapException(IOException.class, 
-                        ex -> new FileOperationException("ファイル操作に失敗しました", ex, 
-                                FileOperationException.ErrorType.IO_ERROR))
-                );
-                
-                // 例外ハンドラーチェーンを実行
-                handlerChain.handle(e);
-                
-            } catch (FileOperationException ex) {
-                System.err.println("変換された例外: " + ex.getMessage());
-                System.err.println("エラータイプ: " + ex.getErrorType());
-            } catch (Exception ex) {
-                System.err.println("未処理の例外: " + ex.getMessage());
-            }
-        }
-    }
-    
-    /**
-     * 例外フィルタリングを使用して複数のファイル操作を実行します。
-     * 
-     * @param filePaths ファイルパスのリスト
-     * @return 成功したファイル操作の数
-     */
-    public static int executeMultipleOperations(List<String> filePaths) {
-        int successCount = 0;
-        List<Exception> exceptions = new ArrayList<>();
-        
-        for (String filePath : filePaths) {
-            try {
-                performFileOperation(filePath);
-                successCount++;
-            } catch (Exception e) {
-                exceptions.add(e);
-            }
-        }
-        
-        // 例外の集計と処理
-        if (!exceptions.isEmpty()) {
-            System.err.println("\n=== 例外の集計 ===");
+            // 例外の型を表示
+            System.out.println("キャッチした例外: " + e.getClass().getSimpleName());
+            System.out.println("例外メッセージ: " + e.getMessage());
             
-            // FileNotFoundExceptionの数をカウント
-            long fileNotFoundCount = exceptions.stream()
-                    .filter(e -> e instanceof FileNotFoundException)
-                    .count();
-            
-            // AccessDeniedExceptionの数をカウント
-            long accessDeniedCount = exceptions.stream()
-                    .filter(e -> e instanceof AccessDeniedException)
-                    .count();
-            
-            // その他のIOExceptionの数をカウント
-            long otherIOCount = exceptions.stream()
-                    .filter(e -> e instanceof IOException && 
-                           !(e instanceof FileNotFoundException) && 
-                           !(e instanceof AccessDeniedException))
-                    .count();
-            
-            System.err.println("ファイルが見つからない例外: " + fileNotFoundCount);
-            System.err.println("アクセス拒否例外: " + accessDeniedCount);
-            System.err.println("その他のIO例外: " + otherIOCount);
-            
-            // 最初の数個の例外の詳細を表示
-            System.err.println("\n最初の3つの例外の詳細:");
-            exceptions.stream()
-                    .limit(3)
-                    .forEach(e -> System.err.println("- " + e.getClass().getSimpleName() + ": " + e.getMessage()));
-        }
-        
-        return successCount;
-    }
-    
-    /**
-     * 例外フィルタリングを使用して例外を分類します。
-     * 
-     * @param exceptions 例外のリスト
-     * @return 分類された例外のマップ
-     */
-    public static void categorizeExceptions(List<Exception> exceptions) {
-        System.out.println("\n=== 例外の分類 ===");
-        
-        // 例外フィルターの定義
-        Predicate<Exception> isFileNotFound = e -> e instanceof FileNotFoundException;
-        Predicate<Exception> isAccessDenied = e -> e instanceof AccessDeniedException;
-        Predicate<Exception> isIOException = e -> e instanceof IOException && 
-                                                 !(e instanceof FileNotFoundException) && 
-                                                 !(e instanceof AccessDeniedException);
-        
-        // 例外の分類
-        List<Exception> fileNotFoundExceptions = new ArrayList<>();
-        List<Exception> accessDeniedExceptions = new ArrayList<>();
-        List<Exception> otherIOExceptions = new ArrayList<>();
-        List<Exception> otherExceptions = new ArrayList<>();
-        
-        for (Exception e : exceptions) {
-            if (isFileNotFound.test(e)) {
-                fileNotFoundExceptions.add(e);
-            } else if (isAccessDenied.test(e)) {
-                accessDeniedExceptions.add(e);
-            } else if (isIOException.test(e)) {
-                otherIOExceptions.add(e);
+            // exceptionTypeに基づいて、特定の例外だけを処理
+            if (exceptionType.equals("io") && e instanceof IOException) {
+                System.out.println("IOExceptionを処理しました");
+            } else if (exceptionType.equals("sql") && e instanceof SQLException) {
+                System.out.println("SQLExceptionを処理しました");
+            } else if (exceptionType.equals("all")) {
+                System.out.println("すべての例外を処理しました");
             } else {
-                otherExceptions.add(e);
+                // 処理しない例外は再スロー
+                System.out.println("この例外は処理対象外のため、再スローします");
+                throw e;
             }
         }
-        
-        // 分類結果の表示
-        System.out.println("ファイルが見つからない例外: " + fileNotFoundExceptions.size());
-        System.out.println("アクセス拒否例外: " + accessDeniedExceptions.size());
-        System.out.println("その他のIO例外: " + otherIOExceptions.size());
-        System.out.println("その他の例外: " + otherExceptions.size());
     }
-
-    public static void main(String[] args) {
-        // 単一のファイル操作
-        System.out.println("=== 単一のファイル操作 ===");
-        executeWithExceptionFiltering("example.txt");
-        
-        // 複数のファイル操作
-        System.out.println("\n=== 複数のファイル操作 ===");
-        List<String> filePaths = List.of(
-            "file1.txt",
-            "file2.txt",
-            "file3.txt",
-            "file4.txt",
-            "file5.txt"
+    
+    /**
+     * マルチキャッチ構文を使用して、複数の例外タイプを1つのcatchブロックで処理します。
+     * 
+     * @throws Exception 処理されなかった例外
+     */
+    public static void processExceptionsWithMultiCatch() throws Exception {
+        try {
+            // ランダムに例外をスロー
+            throwRandomException();
+        } catch (FileNotFoundException | SQLException e) {
+            // FileNotFoundExceptionとSQLExceptionを1つのcatchブロックで処理
+            System.out.println("マルチキャッチで捕捉した例外: " + e.getClass().getSimpleName());
+            System.out.println("例外メッセージ: " + e.getMessage());
+            System.out.println("FileNotFoundExceptionまたはSQLExceptionを処理しました");
+        } catch (Exception e) {
+            // その他の例外の処理
+            System.out.println("その他の例外が発生しました: " + e.getClass().getSimpleName());
+            System.out.println("例外メッセージ: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    /**
+     * ランダムに例外をスローします。
+     * 
+     * @throws FileNotFoundException ファイルが見つからない場合
+     * @throws IOException 入出力エラーが発生した場合
+     * @throws SQLException SQLエラーが発生した場合
+     * @throws IllegalArgumentException 不正な引数が渡された場合
+     */
+    private static void throwRandomException() throws FileNotFoundException, IOException, SQLException, IllegalArgumentException {
+        List<Exception> exceptions = Arrays.asList(
+            new FileNotFoundException("ファイルが見つかりません"),
+            new IOException("入出力エラーが発生しました"),
+            new SQLException("SQLエラーが発生しました"),
+            new IllegalArgumentException("不正な引数が渡されました")
         );
         
-        int successCount = executeMultipleOperations(filePaths);
-        System.out.println("\n成功したファイル操作: " + successCount + "/" + filePaths.size());
+        // ランダムに例外を選択
+        int index = (int) (Math.random() * exceptions.size());
+        Exception exception = exceptions.get(index);
         
-        // 例外の収集と分類
-        System.out.println("\n=== 例外の収集と分類 ===");
-        List<Exception> collectedExceptions = new ArrayList<>();
+        // 選択した例外をスロー
+        if (exception instanceof FileNotFoundException) {
+            throw (FileNotFoundException) exception;
+        } else if (exception instanceof IOException) {
+            throw (IOException) exception;
+        } else if (exception instanceof SQLException) {
+            throw (SQLException) exception;
+        } else if (exception instanceof IllegalArgumentException) {
+            throw (IllegalArgumentException) exception;
+        }
+    }
+    
+    public static void main(String[] args) {
+        // 例外フィルタリングのテスト
+        System.out.println("===== 例外フィルタリングのテスト =====");
         
-        for (int i = 0; i < 20; i++) {
+        // IOExceptionのみを処理
+        System.out.println("\n--- IOExceptionのみを処理 ---");
+        for (int i = 0; i < 5; i++) {
             try {
-                performFileOperation("test" + i + ".txt");
+                processExceptionsWithFiltering("io");
+                System.out.println("例外は発生しませんでした");
             } catch (Exception e) {
-                collectedExceptions.add(e);
+                System.out.println("キャッチされなかった例外: " + e.getClass().getSimpleName());
+                System.out.println("例外メッセージ: " + e.getMessage());
             }
+            System.out.println();
         }
         
-        System.out.println("収集された例外の数: " + collectedExceptions.size());
-        categorizeExceptions(collectedExceptions);
+        // SQLExceptionのみを処理
+        System.out.println("\n--- SQLExceptionのみを処理 ---");
+        for (int i = 0; i < 5; i++) {
+            try {
+                processExceptionsWithFiltering("sql");
+                System.out.println("例外は発生しませんでした");
+            } catch (Exception e) {
+                System.out.println("キャッチされなかった例外: " + e.getClass().getSimpleName());
+                System.out.println("例外メッセージ: " + e.getMessage());
+            }
+            System.out.println();
+        }
+        
+        // すべての例外を処理
+        System.out.println("\n--- すべての例外を処理 ---");
+        for (int i = 0; i < 5; i++) {
+            try {
+                processExceptionsWithFiltering("all");
+                System.out.println("例外は発生しませんでした");
+            } catch (Exception e) {
+                System.out.println("キャッチされなかった例外: " + e.getClass().getSimpleName());
+                System.out.println("例外メッセージ: " + e.getMessage());
+            }
+            System.out.println();
+        }
+        
+        // マルチキャッチのテスト
+        System.out.println("\n===== マルチキャッチのテスト =====");
+        for (int i = 0; i < 5; i++) {
+            try {
+                processExceptionsWithMultiCatch();
+                System.out.println("例外は発生しませんでした");
+            } catch (Exception e) {
+                System.out.println("キャッチされなかった例外: " + e.getClass().getSimpleName());
+                System.out.println("例外メッセージ: " + e.getMessage());
+            }
+            System.out.println();
+        }
     }
 }
 ```
 
-## 発展演習2: 例外処理のパフォーマンス測定
+### 解説
+この解答例では、例外フィルタリングとマルチキャッチ構文を実装しています。
+
+1. **例外フィルタリング**
+   - `processExceptionsWithFiltering`メソッドでは、`exceptionType`パラメータに基づいて、特定の例外だけを処理しています
+   - `"io"`の場合は`IOException`だけを処理し、`"sql"`の場合は`SQLException`だけを処理し、`"all"`の場合はすべての例外を処理しています
+   - 処理対象外の例外は再スローしています
+
+2. **マルチキャッチ構文**
+   - `processExceptionsWithMultiCatch`メソッドでは、Java 7で導入されたマルチキャッチ構文を使用しています
+   - `FileNotFoundException | SQLException`のように、複数の例外タイプを1つの`catch`ブロックで処理しています
+   - これにより、同じ処理を行う例外を効率的にキャッチできます
+
+3. **ランダム例外生成**
+   - `throwRandomException`メソッドでは、4種類の例外（`FileNotFoundException`、`IOException`、`SQLException`、`IllegalArgumentException`）からランダムに1つを選択してスローしています
+   - これにより、様々な例外パターンをテストできます
+
+4. **テストコード**
+   - `main`メソッドでは、様々な条件で例外フィルタリングとマルチキャッチをテストしています
+   - 各テストケースで複数回実行することで、ランダム性を確保しています
+
+この実装により、特定の条件に一致する例外だけを処理し、それ以外の例外は上位の呼び出し元に伝播させる方法を示しています。また、マルチキャッチ構文を使用して、複数の例外タイプを効率的に処理する方法も示しています。
+
+## 発展演習2: 例外処理のパフォーマンス測定（難易度：発展）
 
 ### 解答例
 ```java
-package exception.performance;
+package exceptions.performance;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-
+/**
+ * 例外処理のパフォーマンスを測定するデモクラス
+ */
 public class ExceptionPerformanceDemo {
-
+    
+    // 繰り返し回数
+    private static final int ITERATIONS = 1000000;
+    
     /**
-     * 結果クラス
+     * 例外をスローして処理する方法でディレクトリの深さを計算します。
+     * 
+     * @param path パス
+     * @return ディレクトリの深さ
+     * @throws IllegalArgumentException パスがnullまたは空の場合
      */
-    static class Result<T> {
-        private final T value;
-        private final Exception error;
-        
-        private Result(T value, Exception error) {
-            this.value = value;
-            this.error = error;
+    public static int calculateDepthWithExceptions(String path) {
+        if (path == null || path.isEmpty()) {
+            throw new IllegalArgumentException("パスがnullまたは空です");
         }
         
-        public static <T> Result<T> success(T value) {
-            return new Result<>(value, null);
-        }
-        
-        public static <T> Result<T> failure(Exception error) {
-            return new Result<>(null, error);
-        }
-        
-        public boolean isSuccess() {
-            return error == null;
-        }
-        
-        public T getValue() {
-            if (!isSuccess()) {
-                throw new IllegalStateException("結果が失敗の場合は値を取得できません");
+        // スラッシュの数をカウント
+        int depth = 0;
+        for (int i = 0; i < path.length(); i++) {
+            if (path.charAt(i) == '/' || path.charAt(i) == '\\') {
+                depth++;
             }
-            return value;
         }
         
-        public Exception getError() {
-            if (isSuccess()) {
-                throw new IllegalStateException("結果が成功の場合はエラーを取得できません");
-            }
-            return error;
+        return depth;
+    }
+    
+    /**
+     * 戻り値を使用してエラーを表現する方法でディレクトリの深さを計算します。
+     * 
+     * @param path パス
+     * @return ディレクトリの深さ（エラーの場合は-1）
+     */
+    public static int calculateDepthWithReturnValue(String path) {
+        if (path == null || path.isEmpty()) {
+            return -1;  // エラーを表す戻り値
         }
         
-        public <U> Result<U> map(ThrowingFunction<T, U> mapper) {
-            if (!isSuccess()) {
-                return Result.failure(error);
+        // スラッシュの数をカウント
+        int depth = 0;
+        for (int i = 0; i < path.length(); i++) {
+            if (path.charAt(i) == '/' || path.charAt(i) == '\\') {
+                depth++;
             }
+        }
+        
+        return depth;
+    }
+    
+    /**
+     * 例外をスローして処理する方法のパフォーマンスを測定します。
+     * 
+     * @param errorRate エラー率（0.0～1.0）
+     * @return 実行時間（ミリ秒）
+     */
+    public static long measureExceptionPerformance(double errorRate) {
+        // 開始時間を記録
+        long startTime = System.currentTimeMillis();
+        
+        // ITERATIONS回繰り返し
+        for (int i = 0; i < ITERATIONS; i++) {
+            try {
+                // errorRateの確率でnullを渡し、それ以外は有効なパスを渡す
+                String path = (Math.random() < errorRate) ? null : "/path/to/some/directory";
+                int depth = calculateDepthWithExceptions(path);
+                
+                // 結果を使用（最適化防止）
+                if (depth < 0) {
+                    System.out.println("Negative depth: " + depth);
+                }
+            } catch (IllegalArgumentException e) {
+                // 例外をキャッチして処理
+                // 実際の処理は行わない（パフォーマンス測定のため）
+            }
+        }
+        
+        // 終了時間を記録し、実行時間を計算
+        long endTime = System.currentTimeMillis();
+        return endTime - startTime;
+    }
+    
+    /**
+     * 戻り値を使用してエラーを表現する方法のパフォーマンスを測定します。
+     * 
+     * @param errorRate エラー率（0.0～1.0）
+     * @return 実行時間（ミリ秒）
+     */
+    public static long measureReturnValuePerformance(double errorRate) {
+        // 開始時間を記録
+        long startTime = System.currentTimeMillis();
+        
+        // ITERATIONS回繰り返し
+        for (int i = 0; i < ITERATIONS; i++) {
+            // errorRateの確率でnullを渡し、それ以外は有効なパスを渡す
+            String path = (Math.random() < errorRate) ? null : "/path/to/some/directory";
+            int depth = calculateDepthWithReturnValue(path);
             
-            try {
-                return Result.success(mapper.apply(value));
-            } catch (Exception e) {
-                return Result.failure(e);
-            }
-        }
-        
-        public T getOrElse(T defaultValue) {
-            return isSuccess() ? value : defaultValue;
-        }
-        
-        public T getOrElseGet(Supplier<T> supplier) {
-            return isSuccess() ? value : supplier.get();
-        }
-        
-        public void ifSuccess(ThrowingConsumer<T> consumer) {
-            if (isSuccess()) {
-                try {
-                    consumer.accept(value);
-                } catch (Exception e) {
-                    // 例外を無視
+            // 戻り値をチェックしてエラー処理
+            if (depth < 0) {
+                // エラー処理
+                // 実際の処理は行わない（パフォーマンス測定のため）
+            } else {
+                // 正常処理
+                // 結果を使用（最適化防止）
+                if (depth < 0) {
+                    System.out.println("Negative depth: " + depth);
                 }
             }
         }
         
-        public void ifFailure(ThrowingConsumer<Exception> consumer) {
-            if (!isSuccess()) {
-                try {
-                    consumer.accept(error);
-                } catch (Exception e) {
-                    // 例外を無視
-                }
-            }
-        }
+        // 終了時間を記録し、実行時間を計算
+        long endTime = System.currentTimeMillis();
+        return endTime - startTime;
     }
     
-    /**
-     * 例外をスローできる関数インターフェース
-     */
-    @FunctionalInterface
-    interface ThrowingFunction<T, R> {
-        R apply(T t) throws Exception;
-    }
-    
-    /**
-     * 例外をスローできるコンシューマーインターフェース
-     */
-    @FunctionalInterface
-    interface ThrowingConsumer<T> {
-        void accept(T t) throws Exception;
-    }
-    
-    /**
-     * 例外をスローできるサプライヤーインターフェース
-     */
-    @FunctionalInterface
-    interface ThrowingSupplier<T> {
-        T get() throws Exception;
-    }
-    
-    /**
-     * 例外を使用した処理
-     */
-    public static String processWithExceptions(String input) throws IOException {
-        if (input == null) {
-            throw new NullPointerException("入力がnullです");
-        }
-        
-        if (input.isEmpty()) {
-            throw new IllegalArgumentException("入力が空です");
-        }
-        
-        if (input.equals("not_found")) {
-            throw new FileNotFoundException("ファイルが見つかりません");
-        }
-        
-        if (input.equals("io_error")) {
-            throw new IOException("IO操作中にエラーが発生しました");
-        }
-        
-        return "処理結果: " + input;
-    }
-    
-    /**
-     * 結果オブジェクトを使用した処理
-     */
-    public static Result<String> processWithResult(String input) {
-        if (input == null) {
-            return Result.failure(new NullPointerException("入力がnullです"));
-        }
-        
-        if (input.isEmpty()) {
-            return Result.failure(new IllegalArgumentException("入力が空です"));
-        }
-        
-        if (input.equals("not_found")) {
-            return Result.failure(new FileNotFoundException("ファイルが見つかりません"));
-        }
-        
-        if (input.equals("io_error")) {
-            return Result.failure(new IOException("IO操作中にエラーが発生しました"));
-        }
-        
-        return Result.success("処理結果: " + input);
-    }
-    
-    /**
-     * Optionalを使用した処理
-     */
-    public static Optional<String> processWithOptional(String input) {
-        if (input == null || input.isEmpty() || input.equals("not_found") || input.equals("io_error")) {
-            return Optional.empty();
-        }
-        
-        return Optional.of("処理結果: " + input);
-    }
-    
-    /**
-     * 例外を使用した処理のパフォーマンス測定
-     */
-    public static void measureExceptionPerformance() {
-        System.out.println("=== 例外を使用した処理のパフォーマンス測定 ===");
-        
-        // テストデータの準備
-        List<String> inputs = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-            inputs.add("input" + i);
-        }
-        
-        // 正常系のみのケース
-        long startTime1 = System.nanoTime();
-        
-        for (String input : inputs) {
-            try {
-                String result = processWithExceptions(input);
-            } catch (IOException e) {
-                // 例外を無視
-            }
-        }
-        
-        long endTime1 = System.nanoTime();
-        long duration1 = (endTime1 - startTime1) / 1_000_000; // ミリ秒に変換
-        
-        // 例外が発生するケース（10%の確率）
-        inputs.clear();
-        for (int i = 0; i < 900; i++) {
-            inputs.add("input" + i);
-        }
-        for (int i = 0; i < 100; i++) {
-            if (i % 2 == 0) {
-                inputs.add("not_found");
-            } else {
-                inputs.add("io_error");
-            }
-        }
-        
-        long startTime2 = System.nanoTime();
-        
-        for (String input : inputs) {
-            try {
-                String result = processWithExceptions(input);
-            } catch (IOException e) {
-                // 例外を無視
-            }
-        }
-        
-        long endTime2 = System.nanoTime();
-        long duration2 = (endTime2 - startTime2) / 1_000_000; // ミリ秒に変換
-        
-        System.out.println("正常系のみ: " + duration1 + " ms");
-        System.out.println("例外発生あり（10%）: " + duration2 + " ms");
-        System.out.println("パフォーマンス比: " + (double) duration2 / duration1);
-    }
-    
-    /**
-     * 結果オブジェクトを使用した処理のパフォーマンス測定
-     */
-    public static void measureResultPerformance() {
-        System.out.println("\n=== 結果オブジェクトを使用した処理のパフォーマンス測定 ===");
-        
-        // テストデータの準備
-        List<String> inputs = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-            inputs.add("input" + i);
-        }
-        
-        // 正常系のみのケース
-        long startTime1 = System.nanoTime();
-        
-        for (String input : inputs) {
-            Result<String> result = processWithResult(input);
-            if (result.isSuccess()) {
-                String value = result.getValue();
-            }
-        }
-        
-        long endTime1 = System.nanoTime();
-        long duration1 = (endTime1 - startTime1) / 1_000_000; // ミリ秒に変換
-        
-        // エラーが発生するケース（10%の確率）
-        inputs.clear();
-        for (int i = 0; i < 900; i++) {
-            inputs.add("input" + i);
-        }
-        for (int i = 0; i < 100; i++) {
-            if (i % 2 == 0) {
-                inputs.add("not_found");
-            } else {
-                inputs.add("io_error");
-            }
-        }
-        
-        long startTime2 = System.nanoTime();
-        
-        for (String input : inputs) {
-            Result<String> result = processWithResult(input);
-            if (result.isSuccess()) {
-                String value = result.getValue();
-            }
-        }
-        
-        long endTime2 = System.nanoTime();
-        long duration2 = (endTime2 - startTime2) / 1_000_000; // ミリ秒に変換
-        
-        System.out.println("正常系のみ: " + duration1 + " ms");
-        System.out.println("エラー発生あり（10%）: " + duration2 + " ms");
-        System.out.println("パフォーマンス比: " + (double) duration2 / duration1);
-    }
-    
-    /**
-     * Optionalを使用した処理のパフォーマンス測定
-     */
-    public static void measureOptionalPerformance() {
-        System.out.println("\n=== Optionalを使用した処理のパフォーマンス測定 ===");
-        
-        // テストデータの準備
-        List<String> inputs = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-            inputs.add("input" + i);
-        }
-        
-        // 正常系のみのケース
-        long startTime1 = System.nanoTime();
-        
-        for (String input : inputs) {
-            Optional<String> result = processWithOptional(input);
-            if (result.isPresent()) {
-                String value = result.get();
-            }
-        }
-        
-        long endTime1 = System.nanoTime();
-        long duration1 = (endTime1 - startTime1) / 1_000_000; // ミリ秒に変換
-        
-        // 空のOptionalが返るケース（10%の確率）
-        inputs.clear();
-        for (int i = 0; i < 900; i++) {
-            inputs.add("input" + i);
-        }
-        for (int i = 0; i < 100; i++) {
-            if (i % 2 == 0) {
-                inputs.add("not_found");
-            } else {
-                inputs.add("io_error");
-            }
-        }
-        
-        long startTime2 = System.nanoTime();
-        
-        for (String input : inputs) {
-            Optional<String> result = processWithOptional(input);
-            if (result.isPresent()) {
-                String value = result.get();
-            }
-        }
-        
-        long endTime2 = System.nanoTime();
-        long duration2 = (endTime2 - startTime2) / 1_000_000; // ミリ秒に変換
-        
-        System.out.println("正常系のみ: " + duration1 + " ms");
-        System.out.println("空のOptionalあり（10%）: " + duration2 + " ms");
-        System.out.println("パフォーマンス比: " + (double) duration2 / duration1);
-    }
-    
-    /**
-     * 例外のスタックトレースのパフォーマンス測定
-     */
-    public static void measureStackTracePerformance() {
-        System.out.println("\n=== 例外のスタックトレースのパフォーマンス測定 ===");
-        
-        // スタックトレースあり
-        long startTime1 = System.nanoTime();
-        
-        for (int i = 0; i < 1000; i++) {
-            try {
-                throw new RuntimeException("テスト例外");
-            } catch (RuntimeException e) {
-                // スタックトレースを取得
-                StackTraceElement[] stackTrace = e.getStackTrace();
-            }
-        }
-        
-        long endTime1 = System.nanoTime();
-        long duration1 = (endTime1 - startTime1) / 1_000_000; // ミリ秒に変換
-        
-        // スタックトレースなし
-        long startTime2 = System.nanoTime();
-        
-        for (int i = 0; i < 1000; i++) {
-            try {
-                throw new RuntimeException("テスト例外") {
-                    // スタックトレースを抑制
-                    @Override
-                    public synchronized Throwable fillInStackTrace() {
-                        return this;
-                    }
-                };
-            } catch (RuntimeException e) {
-                // スタックトレースを取得
-                StackTraceElement[] stackTrace = e.getStackTrace();
-            }
-        }
-        
-        long endTime2 = System.nanoTime();
-        long duration2 = (endTime2 - startTime2) / 1_000_000; // ミリ秒に変換
-        
-        System.out.println("スタックトレースあり: " + duration1 + " ms");
-        System.out.println("スタックトレースなし: " + duration2 + " ms");
-        System.out.println("パフォーマンス比: " + (double) duration1 / duration2);
-    }
-    
-    /**
-     * 例外処理の深さのパフォーマンス測定
-     */
-    public static void measureExceptionDepthPerformance() {
-        System.out.println("\n=== 例外処理の深さのパフォーマンス測定 ===");
-        
-        // 浅い例外処理
-        long startTime1 = System.nanoTime();
-        
-        for (int i = 0; i < 1000; i++) {
-            try {
-                if (i % 10 == 0) {
-                    throw new RuntimeException("テスト例外");
-                }
-            } catch (RuntimeException e) {
-                // 例外を処理
-            }
-        }
-        
-        long endTime1 = System.nanoTime();
-        long duration1 = (endTime1 - startTime1) / 1_000_000; // ミリ秒に変換
-        
-        // 深い例外処理
-        long startTime2 = System.nanoTime();
-        
-        for (int i = 0; i < 1000; i++) {
-            try {
-                method1(i);
-            } catch (RuntimeException e) {
-                // 例外を処理
-            }
-        }
-        
-        long endTime2 = System.nanoTime();
-        long duration2 = (endTime2 - startTime2) / 1_000_000; // ミリ秒に変換
-        
-        System.out.println("浅い例外処理: " + duration1 + " ms");
-        System.out.println("深い例外処理: " + duration2 + " ms");
-        System.out.println("パフォーマンス比: " + (double) duration2 / duration1);
-    }
-    
-    private static void method1(int i) {
-        method2(i);
-    }
-    
-    private static void method2(int i) {
-        method3(i);
-    }
-    
-    private static void method3(int i) {
-        method4(i);
-    }
-    
-    private static void method4(int i) {
-        method5(i);
-    }
-    
-    private static void method5(int i) {
-        if (i % 10 == 0) {
-            throw new RuntimeException("テスト例外");
-        }
-    }
-    
-    /**
-     * try-finallyとtry-with-resourcesのパフォーマンス比較
-     */
-    public static void compareTryFinallyAndTryWithResources() {
-        System.out.println("\n=== try-finallyとtry-with-resourcesのパフォーマンス比較 ===");
-        
-        // try-finally
-        long startTime1 = System.nanoTime();
-        
-        for (int i = 0; i < 10000; i++) {
-            CustomResource resource = new CustomResource();
-            try {
-                resource.use();
-            } finally {
-                resource.close();
-            }
-        }
-        
-        long endTime1 = System.nanoTime();
-        long duration1 = (endTime1 - startTime1) / 1_000_000; // ミリ秒に変換
-        
-        // try-with-resources
-        long startTime2 = System.nanoTime();
-        
-        for (int i = 0; i < 10000; i++) {
-            try (CustomResource resource = new CustomResource()) {
-                resource.use();
-            }
-        }
-        
-        long endTime2 = System.nanoTime();
-        long duration2 = (endTime2 - startTime2) / 1_000_000; // ミリ秒に変換
-        
-        System.out.println("try-finally: " + duration1 + " ms");
-        System.out.println("try-with-resources: " + duration2 + " ms");
-        System.out.println("パフォーマンス比: " + (double) duration1 / duration2);
-    }
-    
-    /**
-     * カスタムリソースクラス
-     */
-    static class CustomResource implements AutoCloseable {
-        public void use() {
-            // リソースを使用
-        }
-        
-        @Override
-        public void close() {
-            // リソースをクローズ
-        }
-    }
-
     public static void main(String[] args) {
-        // 例外を使用した処理のパフォーマンス測定
-        measureExceptionPerformance();
+        // エラー率の配列
+        double[] errorRates = {0.0, 0.01, 0.1, 0.5, 1.0};
         
-        // 結果オブジェクトを使用した処理のパフォーマンス測定
-        measureResultPerformance();
+        System.out.println("===== 例外処理のパフォーマンス測定 =====");
+        System.out.println("繰り返し回数: " + ITERATIONS);
+        System.out.println();
         
-        // Optionalを使用した処理のパフォーマンス測定
-        measureOptionalPerformance();
+        System.out.println("エラー率\t例外処理時間(ms)\t戻り値処理時間(ms)\t比率(例外/戻り値)");
+        System.out.println("--------------------------------------------------------------");
         
-        // 例外のスタックトレースのパフォーマンス測定
-        measureStackTracePerformance();
+        for (double errorRate : errorRates) {
+            // 例外をスローして処理する方法のパフォーマンスを測定
+            long exceptionTime = measureExceptionPerformance(errorRate);
+            
+            // 戻り値を使用してエラーを表現する方法のパフォーマンスを測定
+            long returnValueTime = measureReturnValuePerformance(errorRate);
+            
+            // 比率を計算
+            double ratio = (double) exceptionTime / returnValueTime;
+            
+            // 結果を表示
+            System.out.printf("%.2f\t%d\t\t%d\t\t%.2f%n", errorRate, exceptionTime, returnValueTime, ratio);
+        }
         
-        // 例外処理の深さのパフォーマンス測定
-        measureExceptionDepthPerformance();
-        
-        // try-finallyとtry-with-resourcesのパフォーマンス比較
-        compareTryFinallyAndTryWithResources();
-        
-        // 結論
-        System.out.println("\n=== 結論 ===");
-        System.out.println("1. 例外は正常系のフローよりも大幅に遅い");
-        System.out.println("2. 結果オブジェクトやOptionalは例外よりも高速");
-        System.out.println("3. スタックトレースの生成は例外処理のコストの大部分を占める");
-        System.out.println("4. 例外処理の深さが深いほどパフォーマンスが低下する");
-        System.out.println("5. try-with-resourcesはtry-finallyと同等以上のパフォーマンス");
-        System.out.println("6. 例外はエラー処理のために使用し、制御フローには使用しない");
+        System.out.println("\n--- 考察 ---");
+        System.out.println("1. エラー率が低い場合（0.0, 0.01）、例外処理と戻り値を使用した処理の性能差は小さい");
+        System.out.println("2. エラー率が高くなるほど（0.1, 0.5, 1.0）、例外処理の性能が戻り値を使用した処理に比べて低下する");
+        System.out.println("3. エラー率が1.0（すべての呼び出しでエラー）の場合、例外処理は戻り値を使用した処理に比べて数倍～数十倍遅くなる可能性がある");
+        System.out.println("4. 例外処理は、スタックトレースの生成やJVMの最適化の妨げになるため、頻繁に発生するエラー状況では性能に影響を与える");
+        System.out.println("5. 例外は「例外的な状況」に使用し、通常の制御フローには使用しないことが推奨される");
     }
 }
 ```
+
+### 解説
+この解答例では、例外処理と戻り値を使用したエラー処理のパフォーマンスを比較しています。
+
+1. **ディレクトリの深さ計算**
+   - `calculateDepthWithExceptions`メソッドでは、パスがnullまたは空の場合に例外をスローしています
+   - `calculateDepthWithReturnValue`メソッドでは、パスがnullまたは空の場合に-1を返しています
+   - どちらのメソッドも、パスの深さをスラッシュの数でカウントしています
+
+2. **パフォーマンス測定**
+   - `measureExceptionPerformance`メソッドでは、例外をスローして処理する方法のパフォーマンスを測定しています
+   - `measureReturnValuePerformance`メソッドでは、戻り値を使用してエラーを表現する方法のパフォーマンスを測定しています
+   - どちらのメソッドも、指定されたエラー率でエラーを発生させ、処理時間を測定しています
+
+3. **エラー率の影響**
+   - 様々なエラー率（0.0, 0.01, 0.1, 0.5, 1.0）でパフォーマンスを測定し、比較しています
+   - エラー率が高くなるほど、例外処理の性能が戻り値を使用した処理に比べて低下することを示しています
+
+4. **考察**
+   - エラー率が低い場合、例外処理と戻り値を使用した処理の性能差は小さいことを説明しています
+   - エラー率が高くなるほど、例外処理の性能が低下することを説明しています
+   - 例外処理は「例外的な状況」に使用し、通常の制御フローには使用しないことを推奨しています
+
+この実装により、例外処理と戻り値を使用したエラー処理のパフォーマンスの違いを示し、適切な使い分けの指針を提供しています。
+
